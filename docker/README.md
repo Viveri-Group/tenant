@@ -48,7 +48,7 @@ APP_URL=http://localhost
 DB_CONNECTION=mysql
 DB_HOST=itv-api-mysql
 DB_PORT=3306
-DB_DATABASE=itv_telephone_api
+DB_DATABASE=telephone_api_multi
 DB_USERNAME=admin
 DB_PASSWORD="your_secure_password_here"
 DB_HOST_READ_ONLY=itv-api-mysql
@@ -62,7 +62,7 @@ QUEUE_CONNECTION=redis
 
 # MySQL Docker Environment
 MYSQL_ROOT_PASSWORD=secret
-MYSQL_DATABASE=itv_telephone_api
+MYSQL_DATABASE=telephone_api_multi
 MYSQL_USER=admin
 MYSQL_PASSWORD="your_secure_password_here"
 ```
@@ -107,7 +107,7 @@ curl http://localhost
 ### Step 2: Configuration Review
 
 1. **Database Configuration**
-   - Default database: `itv_telephone_api`
+   - Default database: `telephone_api_multi`
    - Default user: `admin`
    - Port exposed: `3306` (for external tools)
 
@@ -203,7 +203,7 @@ docker-compose logs -f itv-api-web
 
 ```bash
 # Access MySQL CLI
-docker-compose exec itv-api-mysql mysql -u admin -p itv_telephone_api
+docker-compose exec itv-api-mysql mysql -u admin -p telephone_api_multi
 
 # Run migrations
 docker-compose exec itv-api-web php artisan migrate
@@ -381,10 +381,10 @@ docker-compose exec itv-api-web npm run build
 
 ```bash
 # Backup database
-docker-compose exec itv-api-mysql mysqldump -u admin -p itv_telephone_api > backup_$(date +%Y%m%d_%H%M%S).sql
+docker-compose exec itv-api-mysql mysqldump -u admin -p telephone_api_multi > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Restore database
-docker-compose exec -T itv-api-mysql mysql -u admin -p itv_telephone_api < backup_file.sql
+docker-compose exec -T itv-api-mysql mysql -u admin -p telephone_api_multi < backup_file.sql
 
 # Backup volumes
 docker run --rm -v itv-api-app-files:/backup-source -v $(pwd):/backup ubuntu tar czf /backup/app-files-backup.tar.gz -C /backup-source .
