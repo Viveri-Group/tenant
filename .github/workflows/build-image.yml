@@ -15,7 +15,7 @@ on:
 
 env:
   ECR_REGISTRY: 756455520547.dkr.ecr.eu-west-2.amazonaws.com
-  ECR_REPOSITORY_APP: viveri/itv-telephone-api
+  ECR_REPOSITORY_APP: viveri/telephone-api-multi-tenant
 
 jobs:
   build-and-push-app:
