@@ -1,0 +1,106 @@
+name: Deploy CloudFormation Stack
+
+on:
+  workflow_run:
+    workflows: ["Build and Push App Docker Image"]
+    types:
+      - completed
+
+env:
+  AWS_REGION: eu-west-2
+  STACK_NAME: multi-tenant-blue
+  TEMPLATE_FILE: cloudformation/deploy-test.yaml
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Check if stack exists
+      id: check-stack
+      run: |
+        if aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
+          echo "stack_exists=true" >> $GITHUB_OUTPUT
+          echo "Stack ${{ env.STACK_NAME }} exists"
+        else
+          echo "stack_exists=false" >> $GITHUB_OUTPUT
+          echo "Stack ${{ env.STACK_NAME }} does not exist"
+        fi
+
+    - name: Create CloudFormation stack
+      if: steps.check-stack.outputs.stack_exists == 'false'
+      run: |
+        echo "Creating new CloudFormation stack: ${{ env.STACK_NAME }}"
+        aws cloudformation create-stack \
+          --stack-name ${{ env.STACK_NAME }} \
+          --template-body file://${{ env.TEMPLATE_FILE }} \
+          --capabilities CAPABILITY_IAM \
+          --region ${{ env.AWS_REGION }}
+        
+        echo "Waiting for stack creation to complete..."
+        aws cloudformation wait stack-create-complete \
+          --stack-name ${{ env.STACK_NAME }} \
+          --region ${{ env.AWS_REGION }}
+        
+        echo "Stack created successfully!"
+
+    - name: Update CloudFormation stack
+      if: steps.check-stack.outputs.stack_exists == 'true'
+      run: |
+        echo "Updating existing CloudFormation stack: ${{ env.STACK_NAME }}"
+        
+        # Try to update the stack
+        if aws cloudformation update-stack \
+          --stack-name ${{ env.STACK_NAME }} \
+          --template-body file://${{ env.TEMPLATE_FILE }} \
+          --capabilities CAPABILITY_IAM \
+          --region ${{ env.AWS_REGION }} 2>&1 | tee /tmp/update-output.txt; then
+          
+          echo "Waiting for stack update to complete..."
+          aws cloudformation wait stack-update-complete \
+            --stack-name ${{ env.STACK_NAME }} \
+            --region ${{ env.AWS_REGION }}
+          
+          echo "Stack updated successfully!"
+        else
+          # Check if the error is "No updates are to be performed"
+          if grep -q "No updates are to be performed" /tmp/update-output.txt; then
+            echo "No changes detected in the stack template"
+            exit 0
+          else
+            echo "Stack update failed"
+            cat /tmp/update-output.txt
+            exit 1
+          fi
+        fi
+
+    - name: Get stack outputs
+      run: |
+        echo "Stack outputs:"
+        aws cloudformation describe-stacks \
+          --stack-name ${{ env.STACK_NAME }} \
+          --region ${{ env.AWS_REGION }} \
+          --query 'Stacks[0].Outputs' \
+          --output table
+
+    - name: Get stack status
+      run: |
+        STATUS=$(aws cloudformation describe-stacks \
+          --stack-name ${{ env.STACK_NAME }} \
+          --region ${{ env.AWS_REGION }} \
+          --query 'Stacks[0].StackStatus' \
+          --output text)
+        echo "Final stack status: $STATUS"

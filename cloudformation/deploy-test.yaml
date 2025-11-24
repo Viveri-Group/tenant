@@ -1,0 +1,911 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECS Cluster with multi-tenant API Service Application (Blue/Green, ALB decoupled)
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-00f203d301a7936b9
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Default: subnet-04ba1e0d11134ab9e,subnet-0c3b80bcd6518c5c5
+
+  SecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Default: sg-0f818645648845ff4
+
+  ECSSecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Default: sg-0d6e27ffe3c698199
+
+  Environment:
+    Type: String
+    Default: blue
+    Description: Environment name (blue or green)
+    AllowedValues: [blue, green]
+
+  CertificateArn:
+    Type: String
+    Default: arn:aws:acm:eu-west-2:756455520547:certificate/00affa3a-ae3c-41db-ad5a-774b251caf39
+    Description: ARN of the SSL certificate for multi-tenant.viveri-tech.com
+
+  HostedZoneId:
+    Type: String
+    Description: Route53 Hosted Zone ID for viveri-tech.com
+    Default: 'Z0828736Q75K14BJDJW9'
+
+  AppImageTag:
+    Type: String
+    Default: latest
+    Description: Tag for the web app container image
+
+  NginxImageTag:
+    Type: String
+    Default: multi-tenant-20251124-153012
+    Description: Tag for the Nginx container image
+
+Resources:
+  # EFS File Systems for persistent storage
+  MySQLEFS:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      ThroughputMode: bursting
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub 'multi-tenant-mysql-efs-${Environment}'
+        - Key: Environment
+          Value: !Ref Environment
+
+  MySQLMountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref MySQLEFS
+      SubnetId: !Select [0, !Ref SubnetIds]
+      SecurityGroups: !Ref ECSSecurityGroupIds
+
+  MySQLMountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref MySQLEFS
+      SubnetId: !Select [1, !Ref SubnetIds]
+      SecurityGroups: !Ref ECSSecurityGroupIds
+
+  RedisEFS:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      ThroughputMode: bursting
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub 'multi-tenant-redis-efs-${Environment}'
+        - Key: Environment
+          Value: !Ref Environment
+
+  RedisMountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref RedisEFS
+      SubnetId: !Select [0, !Ref SubnetIds]
+      SecurityGroups: !Ref ECSSecurityGroupIds
+
+  RedisMountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref RedisEFS
+      SubnetId: !Select [1, !Ref SubnetIds]
+      SecurityGroups: !Ref ECSSecurityGroupIds
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub 'multi-tenant-service-${Environment}'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: multi-tenant
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: GetSecretsManagerSecrets
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ECSExecPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: '*'
+
+  AppContainerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub 'multi-tenant-app-container-log-group-${Environment}'
+      RetentionInDays: 7
+
+  NginxContainerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub 'multi-tenant-nginx-container-log-group-${Environment}'
+      RetentionInDays: 7
+
+  WorkerContainerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub 'multi-tenant-worker-container-log-group-${Environment}'
+      RetentionInDays: 7
+
+  MySQLContainerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub 'multi-tenant-mysql-container-log-group-${Environment}'
+      RetentionInDays: 7
+
+  RedisContainerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub 'multi-tenant-redis-container-log-group-${Environment}'
+      RetentionInDays: 7
+
+  MySQLTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn:
+      - MySQLMountTarget1
+      - MySQLMountTarget2
+    Properties:
+      Family: !Sub 'multi-tenant-mysql-${Environment}'
+      Cpu: '2048'
+      Memory: '4096'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      Volumes:
+        - Name: mysql-data
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref MySQLEFS
+            TransitEncryption: ENABLED
+            AuthorizationConfig:
+              IAM: DISABLED
+      ContainerDefinitions:
+        - Name: mysql
+          Image: mysql:8.0
+          Essential: true
+          PortMappings:
+            - ContainerPort: 3306
+              Protocol: tcp
+          Secrets:
+            - Name: MYSQL_ROOT_PASSWORD
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:MYSQL_ROOT_PASSWORD::'
+            - Name: MYSQL_DATABASE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_DATABASE::'
+            - Name: MYSQL_USER
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_USERNAME::'
+            - Name: MYSQL_PASSWORD
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_PASSWORD::'
+          MountPoints:
+            - SourceVolume: mysql-data
+              ContainerPath: /var/lib/mysql
+          Command:
+            - --sort_buffer_size=4096M
+            - --slow_query_log=1
+            - --long_query_time=1
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD || exit 1
+            Interval: 10
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 30
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub 'multi-tenant-mysql-container-log-group-${Environment}'
+              awslogs-region: eu-west-2
+              awslogs-stream-prefix: mysql
+
+  RedisTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn:
+      - RedisMountTarget1
+      - RedisMountTarget2
+    Properties:
+      Family: !Sub 'multi-tenant-redis-${Environment}'
+      Cpu: '2048'
+      Memory: '4096'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      Volumes:
+        - Name: redis-data
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref RedisEFS
+            TransitEncryption: ENABLED
+            AuthorizationConfig:
+              IAM: DISABLED
+      ContainerDefinitions:
+        - Name: redis
+          Image: redis:7-alpine
+          Essential: true
+          PortMappings:
+            - ContainerPort: 6379
+              Protocol: tcp
+          MountPoints:
+            - SourceVolume: redis-data
+              ContainerPath: /data
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub 'multi-tenant-redis-container-log-group-${Environment}'
+              awslogs-region: eu-west-2
+              awslogs-stream-prefix: redis
+
+  AppTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn:
+      - MySQLMountTarget1
+      - MySQLMountTarget2
+      - RedisMountTarget1
+      - RedisMountTarget2
+    Properties:
+      Family: !Sub 'multi-tenant-app-${Environment}'
+      Cpu: '2048'
+      Memory: '4096'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      Volumes:
+        - Name: shared-files
+      ContainerDefinitions:
+        - Name: multi-tenant-api-app
+          Image: !Sub '756455520547.dkr.ecr.eu-west-2.amazonaws.com/viveri/telephone-api-multi-tenant:${AppImageTag}'
+          Essential: true
+          LinuxParameters:
+            Capabilities:
+              Add:
+                - SYS_PTRACE
+          PortMappings:
+            - ContainerPort: 9000
+              HostPort: 9000
+              Name: multi-tenant-api-app
+          MountPoints:
+            - SourceVolume: shared-files
+              ContainerPath: /shared
+          EntryPoint:
+            - "/bin/sh"
+          Command:
+            - "-c"
+            - "sleep 20 && cp -r /var/www/html/public/* /shared/ && touch /shared/.ready && php artisan migrate --force && php-fpm"
+          Environment: []
+          Secrets:
+            - Name: DB_HOST
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_HOST::'
+            - Name: DB_PORT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_PORT::'
+            - Name: DB_DATABASE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_DATABASE::'
+            - Name: DB_USERNAME
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_USERNAME::'
+            - Name: DB_PASSWORD
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_PASSWORD::'
+            - Name: REDIS_HOST
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:REDIS_HOST::'
+            - Name: REDIS_PORT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:REDIS_PORT::'
+            - Name: APP_NAME
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_NAME::'
+            - Name: APP_ENV
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_ENV::'
+            - Name: APP_KEY
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_KEY::'
+            - Name: APP_DEBUG
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_DEBUG::'
+            - Name: APP_TIMEZONE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_TIMEZONE::'
+            - Name: APP_URL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_URL::'
+            - Name: MAX_NUMBER_OF_LINES
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:MAX_NUMBER_OF_LINES::'
+            - Name: APP_LOCALE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_LOCALE::'
+            - Name: APP_FALLBACK_LOCALE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_FALLBACK_LOCALE::'
+            - Name: APP_FAKER_LOCALE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_FAKER_LOCALE::'
+            - Name: APP_MAINTENANCE_DRIVER
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_MAINTENANCE_DRIVER::'
+            - Name: BCRYPT_ROUNDS
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:BCRYPT_ROUNDS::'
+            - Name: LOG_CHANNEL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_CHANNEL::'
+            - Name: LOG_STACK
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_STACK::'
+            - Name: LOG_DEPRECATIONS_CHANNEL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_DEPRECATIONS_CHANNEL::'
+            - Name: LOG_LEVEL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_LEVEL::'
+            - Name: DB_CONNECTION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_CONNECTION::'
+            - Name: DB_HOST_READ_ONLY
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_HOST_READ_ONLY::'
+            - Name: SESSION_DRIVER
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_DRIVER::'
+            - Name: SESSION_LIFETIME
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_LIFETIME::'
+            - Name: SESSION_ENCRYPT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_ENCRYPT::'
+            - Name: SESSION_PATH
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_PATH::'
+            - Name: SESSION_DOMAIN
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_DOMAIN::'
+            - Name: BROADCAST_CONNECTION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:BROADCAST_CONNECTION::'
+            - Name: FILESYSTEM_DISK
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:FILESYSTEM_DISK::'
+            - Name: QUEUE_CONNECTION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:QUEUE_CONNECTION::'
+            - Name: CACHE_STORE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:CACHE_STORE::'
+            - Name: CACHE_PREFIX
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:CACHE_PREFIX::'
+            - Name: MEMCACHED_HOST
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:MEMCACHED_HOST::'
+            - Name: REDIS_CLIENT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:REDIS_CLIENT::'
+            - Name: AWS_ACCESS_KEY_ID
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_ACCESS_KEY_ID::'
+            - Name: AWS_SECRET_ACCESS_KEY
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_SECRET_ACCESS_KEY::'
+            - Name: AWS_DEFAULT_REGION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_DEFAULT_REGION::'
+            - Name: AWS_BUCKET
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_BUCKET::'
+            - Name: AWS_USE_PATH_STYLE_ENDPOINT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_USE_PATH_STYLE_ENDPOINT::'
+            - Name: VITE_APP_NAME
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:VITE_APP_NAME::'
+            - Name: SHOW_LOGO_TO_GUESTS
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SHOW_LOGO_TO_GUESTS::'
+            - Name: LOG_API_REQUEST_USING_QUEUE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_API_REQUEST_USING_QUEUE::'
+            - Name: AWS_SQS_ACCESS_KEY_ID
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_SQS_ACCESS_KEY_ID::'
+            - Name: AWS_SQS_SECRET_ACCESS_KEY
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_SQS_SECRET_ACCESS_KEY::'
+            - Name: SQS_PREFIX
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SQS_PREFIX::'
+            - Name: SQS_QUEUE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SQS_QUEUE::'
+            - Name: SQS_SUFFIX
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SQS_SUFFIX::'
+            - Name: AWS_SQS_DEFAULT_REGION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_SQS_DEFAULT_REGION::'
+            - Name: DMB_TEAMS_WEBHOOK_URL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DMB_TEAMS_WEBHOOK_URL::'
+            - Name: DMB_TEAMS_CRITICAL_WEBHOOK_URL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DMB_TEAMS_CRITICAL_WEBHOOK_URL::'
+            - Name: ENTRIES_DOWNLOAD_RESULTS_PER_PAGE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:ENTRIES_DOWNLOAD_RESULTS_PER_PAGE::'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub 'multi-tenant-app-container-log-group-${Environment}'
+              awslogs-region: eu-west-2
+              awslogs-stream-prefix: app
+        - Name: nginx-container
+          Image: !Sub '756455520547.dkr.ecr.eu-west-2.amazonaws.com/viveri/nginx:${NginxImageTag}'
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80
+              Name: nginx-container
+          MountPoints:
+            - SourceVolume: shared-files
+              ContainerPath: /var/www/html/public
+              ReadOnly: true
+          Command:
+            - "/bin/sh"
+            - "-c"
+            - "while [ ! -f /var/www/html/public/.ready ]; do echo 'Waiting for app build...'; sleep 2; done && echo 'Build ready, starting nginx' && nginx -g 'daemon off;'"
+          DependsOn:
+            - ContainerName: multi-tenant-api-app
+              Condition: START
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub 'multi-tenant-nginx-container-log-group-${Environment}'
+              awslogs-region: eu-west-2
+              awslogs-stream-prefix: nginx
+          Environment:
+            - Name: PHP_FPM_HOST              
+              Value: localhost
+            - Name: PHP_FPM_PORT
+              Value: "9000"
+
+  WorkerTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn:
+      - MySQLMountTarget1
+      - MySQLMountTarget2
+      - RedisMountTarget1
+      - RedisMountTarget2
+    Properties:
+      Family: !Sub 'multi-tenant-worker-${Environment}'
+      Cpu: '2048'
+      Memory: '4096'
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: multi-tenant-worker
+          Image: !Sub '756455520547.dkr.ecr.eu-west-2.amazonaws.com/viveri/telephone-api-multi-tenant:${AppImageTag}'
+          Essential: true
+          LinuxParameters:
+            Capabilities:
+              Add:
+                - SYS_PTRACE
+          Command:
+            - "supervisord"
+            - "-c"
+            - "/etc/supervisor/conf.d/supervisord.conf"
+            - "-n"
+          Environment: []
+          Secrets:
+            - Name: DB_HOST
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_HOST::'
+            - Name: DB_PORT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_PORT::'
+            - Name: DB_DATABASE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_DATABASE::'
+            - Name: DB_USERNAME
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_USERNAME::'
+            - Name: DB_PASSWORD
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_PASSWORD::'
+            - Name: REDIS_HOST
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:REDIS_HOST::'
+            - Name: REDIS_PORT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:REDIS_PORT::'
+            - Name: APP_NAME
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_NAME::'
+            - Name: APP_ENV
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_ENV::'
+            - Name: APP_KEY
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_KEY::'
+            - Name: APP_DEBUG
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_DEBUG::'
+            - Name: APP_TIMEZONE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_TIMEZONE::'
+            - Name: APP_URL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_URL::'
+            - Name: MAX_NUMBER_OF_LINES
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:MAX_NUMBER_OF_LINES::'
+            - Name: APP_LOCALE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_LOCALE::'
+            - Name: APP_FALLBACK_LOCALE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_FALLBACK_LOCALE::'
+            - Name: APP_FAKER_LOCALE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_FAKER_LOCALE::'
+            - Name: APP_MAINTENANCE_DRIVER
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:APP_MAINTENANCE_DRIVER::'
+            - Name: BCRYPT_ROUNDS
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:BCRYPT_ROUNDS::'
+            - Name: LOG_CHANNEL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_CHANNEL::'
+            - Name: LOG_STACK
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_STACK::'
+            - Name: LOG_DEPRECATIONS_CHANNEL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_DEPRECATIONS_CHANNEL::'
+            - Name: LOG_LEVEL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_LEVEL::'
+            - Name: DB_CONNECTION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_CONNECTION::'
+            - Name: DB_HOST_READ_ONLY
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_HOST_READ_ONLY::'
+            - Name: SESSION_DRIVER
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_DRIVER::'
+            - Name: SESSION_LIFETIME
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_LIFETIME::'
+            - Name: SESSION_ENCRYPT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_ENCRYPT::'
+            - Name: SESSION_PATH
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_PATH::'
+            - Name: SESSION_DOMAIN
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SESSION_DOMAIN::'
+            - Name: BROADCAST_CONNECTION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:BROADCAST_CONNECTION::'
+            - Name: FILESYSTEM_DISK
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:FILESYSTEM_DISK::'
+            - Name: QUEUE_CONNECTION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:QUEUE_CONNECTION::'
+            - Name: CACHE_STORE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:CACHE_STORE::'
+            - Name: CACHE_PREFIX
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:CACHE_PREFIX::'
+            - Name: MEMCACHED_HOST
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:MEMCACHED_HOST::'
+            - Name: REDIS_CLIENT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:REDIS_CLIENT::'
+            - Name: AWS_ACCESS_KEY_ID
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_ACCESS_KEY_ID::'
+            - Name: AWS_SECRET_ACCESS_KEY
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_SECRET_ACCESS_KEY::'
+            - Name: AWS_DEFAULT_REGION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_DEFAULT_REGION::'
+            - Name: AWS_BUCKET
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_BUCKET::'
+            - Name: AWS_USE_PATH_STYLE_ENDPOINT
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_USE_PATH_STYLE_ENDPOINT::'
+            - Name: VITE_APP_NAME
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:VITE_APP_NAME::'
+            - Name: SHOW_LOGO_TO_GUESTS
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SHOW_LOGO_TO_GUESTS::'
+            - Name: LOG_API_REQUEST_USING_QUEUE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:LOG_API_REQUEST_USING_QUEUE::'
+            - Name: AWS_SQS_ACCESS_KEY_ID
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_SQS_ACCESS_KEY_ID::'
+            - Name: AWS_SQS_SECRET_ACCESS_KEY
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_SQS_SECRET_ACCESS_KEY::'
+            - Name: SQS_PREFIX
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SQS_PREFIX::'
+            - Name: SQS_QUEUE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SQS_QUEUE::'
+            - Name: SQS_SUFFIX
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:SQS_SUFFIX::'
+            - Name: AWS_SQS_DEFAULT_REGION
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:AWS_SQS_DEFAULT_REGION::'
+            - Name: DMB_TEAMS_WEBHOOK_URL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DMB_TEAMS_WEBHOOK_URL::'
+            - Name: DMB_TEAMS_CRITICAL_WEBHOOK_URL
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DMB_TEAMS_CRITICAL_WEBHOOK_URL::'
+            - Name: ENTRIES_DOWNLOAD_RESULTS_PER_PAGE
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:ENTRIES_DOWNLOAD_RESULTS_PER_PAGE::'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub 'multi-tenant-worker-container-log-group-${Environment}'
+              awslogs-region: eu-west-2
+              awslogs-stream-prefix: worker
+
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub 'multi-tenant-SERVICE-ALB-${Environment}'
+      Scheme: internet-facing
+      Subnets: !Ref SubnetIds
+      SecurityGroups: !Ref SecurityGroupIds
+      Type: application
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: multi-tenant
+
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub 'multi-tenant-NGINX-TG-${Environment}'
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      TargetType: ip
+      HealthCheckPath: /health-check
+      HealthCheckProtocol: HTTP
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Matcher:
+        HttpCode: 200-399
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: multi-tenant
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+      DefaultActions:
+        - Type: forward
+          ForwardConfig:
+            TargetGroups:
+              - TargetGroupArn: !Ref ALBTargetGroup
+                Weight: 100
+
+  ALBListenerHTTPRedirect:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: redirect
+          RedirectConfig:
+            Protocol: HTTPS
+            Port: 443
+            StatusCode: HTTP_301
+
+  ServiceDiscoveryNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Name: !Sub 'multi-tenant-${Environment}.local'
+      Vpc: !Ref VpcId
+
+  MySQLServiceDiscovery:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: mysql
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 60
+        NamespaceId: !Ref ServiceDiscoveryNamespace
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  RedisServiceDiscovery:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: redis
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 60
+        NamespaceId: !Ref ServiceDiscoveryNamespace
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  MySQLECSService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - MySQLTaskDefinition
+      - MySQLMountTarget1
+      - MySQLMountTarget2
+    Properties:
+      Cluster: !Ref ECSCluster
+      LaunchType: FARGATE
+      TaskDefinition: !Ref MySQLTaskDefinition
+      DesiredCount: 1
+      EnableExecuteCommand: true
+      DeploymentConfiguration:
+        MaximumPercent: 100
+        MinimumHealthyPercent: 0
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref SubnetIds
+          SecurityGroups: !Ref ECSSecurityGroupIds
+      ServiceName: !Sub 'multi-tenant-mysql-service-${Environment}'
+      ServiceRegistries:
+        - RegistryArn: !GetAtt MySQLServiceDiscovery.Arn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: multi-tenant-mysql
+
+  RedisECSService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - RedisTaskDefinition
+      - RedisMountTarget1
+      - RedisMountTarget2
+    Properties:
+      Cluster: !Ref ECSCluster
+      LaunchType: FARGATE
+      TaskDefinition: !Ref RedisTaskDefinition
+      DesiredCount: 1
+      EnableExecuteCommand: true
+      DeploymentConfiguration:
+        MaximumPercent: 100
+        MinimumHealthyPercent: 0
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref SubnetIds
+          SecurityGroups: !Ref ECSSecurityGroupIds
+      ServiceName: !Sub 'multi-tenant-redis-service-${Environment}'
+      ServiceRegistries:
+        - RegistryArn: !GetAtt RedisServiceDiscovery.Arn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: multi-tenant-redis
+
+  AppECSService:
+    Type: AWS::ECS::Service
+    DependsOn: 
+      - AppTaskDefinition
+      - ALBListener
+      - MySQLECSService
+      - RedisECSService
+    Properties:
+      Cluster: !Ref ECSCluster
+      LaunchType: FARGATE
+      TaskDefinition: !Ref AppTaskDefinition
+      DesiredCount: 1
+      EnableExecuteCommand: true
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref SubnetIds
+          SecurityGroups: !Ref ECSSecurityGroupIds
+      ServiceName: !Sub 'multi-tenant-app-service-${Environment}'
+      LoadBalancers:
+        - TargetGroupArn: !Ref ALBTargetGroup
+          ContainerName: nginx-container
+          ContainerPort: 80
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: multi-tenant
+
+  AppServiceScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: AppECSService
+    Properties:
+      ServiceNamespace: ecs
+      ResourceId: !Sub 'service/${ECSCluster}/multi-tenant-app-service-${Environment}'
+      ScalableDimension: ecs:service:DesiredCount
+      MinCapacity: 1
+      MaxCapacity: 5
+      RoleARN: !Sub 'arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService'
+
+  AppServiceScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    DependsOn: AppServiceScalableTarget
+    Properties:
+      PolicyName: !Sub 'multi-tenant-app-cpu-scaling-policy-${Environment}'
+      PolicyType: TargetTrackingScaling
+      ServiceNamespace: ecs
+      ResourceId: !Sub 'service/${ECSCluster}/multi-tenant-app-service-${Environment}'
+      ScalableDimension: ecs:service:DesiredCount
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 70.0
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        ScaleOutCooldown: 300
+        ScaleInCooldown: 300
+
+  AppServiceMemoryScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    DependsOn: AppServiceScalableTarget
+    Properties:
+      PolicyName: !Sub 'multi-tenant-app-memory-scaling-policy-${Environment}'
+      PolicyType: TargetTrackingScaling
+      ServiceNamespace: ecs
+      ResourceId: !Sub 'service/${ECSCluster}/multi-tenant-app-service-${Environment}'
+      ScalableDimension: ecs:service:DesiredCount
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 70.0
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageMemoryUtilization
+        ScaleOutCooldown: 300
+        ScaleInCooldown: 300
+
+  WorkerECSService:
+    Type: AWS::ECS::Service
+    DependsOn: WorkerTaskDefinition
+    Properties:
+      Cluster: !Ref ECSCluster
+      LaunchType: FARGATE
+      TaskDefinition: !Ref WorkerTaskDefinition
+      DesiredCount: 1
+      EnableExecuteCommand: true
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref SubnetIds
+          SecurityGroups: !Ref ECSSecurityGroupIds
+      ServiceName: !Sub 'multi-tenant-worker-service-${Environment}'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: multi-tenant-worker
+
+  WorkerServiceScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: WorkerECSService
+    Properties:
+      ServiceNamespace: ecs
+      ResourceId: !Sub 'service/${ECSCluster}/multi-tenant-worker-service-${Environment}'
+      ScalableDimension: ecs:service:DesiredCount
+      MinCapacity: 1
+      MaxCapacity: 10
+      RoleARN: !Sub 'arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService'
+
+  DNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: multi-tenant-test.viveri-tech.com
+      Type: CNAME
+      TTL: 300
+      ResourceRecords:
+        - !GetAtt ALB.DNSName
+
+Outputs:
+  Environment:
+    Description: Environment name
+    Value: !Ref Environment
+    Export:
+      Name: !Sub "multi-tenant-${Environment}-Environment"
+
+  ALBDNSName:
+    Description: DNS name of the Application Load Balancer
+    Value: !GetAtt ALB.DNSName
+    Export:
+      Name: !Sub "multi-tenant-${Environment}-ALBDNSName"
+
+  TargetGroupArn:
+    Description: Target Group ARN for the ALB
+    Value: !Ref ALBTargetGroup
+    Export:
+      Name: !Sub "multi-tenant-${Environment}-TargetGroupArn"

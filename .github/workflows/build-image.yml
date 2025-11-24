@@ -56,8 +56,6 @@ jobs:
         tags: |
           ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_APP }}:latest
           ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_APP }}:${{ github.sha }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Output image details
       run: |
