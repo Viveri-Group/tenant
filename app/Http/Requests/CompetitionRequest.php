@@ -11,6 +11,7 @@ class CompetitionRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'organisation_id' => ['required', 'integer'],
             'name' => ['required', 'string'],
             'start' => ['required', 'date', 'before:end'],
             'end' => ['required', 'date', 'after:start'],

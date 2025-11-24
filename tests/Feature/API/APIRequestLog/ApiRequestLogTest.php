@@ -7,6 +7,7 @@ use App\Jobs\CreateAPIRequestLogJob;
 use App\Jobs\UpdateAPIRequestLogJob;
 use App\Models\APIRequestLog;
 use App\Models\Competition;
+use App\Models\Organisation;
 use App\Models\Participant;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,13 @@ use Tests\TestCase;
 
 class ApiRequestLogTest extends TestCase
 {
+    public function setUp():void
+    {
+        parent::setUp();
+
+        $this->org = Organisation::factory()->create();
+    }
+
     public function test_api_log_are_written_direct_to_db()
     {
         Config::set('system.LOG_API_REQUEST_USING_QUEUE', false);
@@ -27,6 +35,7 @@ class ApiRequestLogTest extends TestCase
         $this->assertCount(0, APIRequestLog::all());
 
         $response = $this->post(route('competition.create'), [
+            'organisation_id' => $this->org->id,
             'name' => 'Test Competition',
             'start' => '2024-01-01 09:00:00',
             'end' => '2024-01-10 09:00:00',
@@ -87,6 +96,7 @@ class ApiRequestLogTest extends TestCase
         $this->assertCount(0, APIRequestLog::all());
 
         $response = $this->post(route('competition.create'), [
+            'organisation_id' => $this->org->id,
             'name' => 'Test Competition',
             'start' => '2024-01-01 09:00:00',
             'end' => '2024-01-10 09:00:00',
@@ -120,6 +130,7 @@ class ApiRequestLogTest extends TestCase
         $this->assertCount(0, APIRequestLog::all());
 
         $response = $this->post(route('competition.create'), [
+            'organisation_id' => $this->org->id,
             'name' => 'Test Competition',
             'start' => '2024-01-01 09:00:00',
             'end' => '2024-01-10 09:00:00',
