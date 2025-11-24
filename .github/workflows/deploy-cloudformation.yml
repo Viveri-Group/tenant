@@ -65,47 +65,48 @@ jobs:
         
         # Try to update the stack and capture both stdout and stderr
         set +e  # Don't exit on error
-        aws cloudformation update-stack \
+        OUTPUT=$(aws cloudformation update-stack \
           --stack-name ${{ env.STACK_NAME }} \
           --template-body file://${{ env.TEMPLATE_FILE }} \
           --capabilities CAPABILITY_IAM \
-          --region ${{ env.AWS_REGION }} 2>&1 | tee /tmp/update-output.txt
+          --region ${{ env.AWS_REGION }} 2>&1)
         
         UPDATE_EXIT_CODE=$?
         set -e  # Re-enable exit on error
         
-        if [ $UPDATE_EXIT_CODE -eq 0 ]; then
+        echo "$OUTPUT"
+        
+        # Check if the error is "No updates are to be performed"
+        if echo "$OUTPUT" | grep -q "No updates are to be performed"; then
+          echo "No CloudFormation changes detected, forcing ECS service deployment to pull latest images..."
+          
+          # Force new deployment for app service to pull latest image
+          aws ecs update-service \
+            --cluster multi-tenant-service-blue \
+            --service multi-tenant-app-service-blue \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+          
+          # Force new deployment for worker service to pull latest image
+          aws ecs update-service \
+            --cluster multi-tenant-service-blue \
+            --service multi-tenant-worker-service-blue \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+          
+          echo "Forced new deployment for app and worker services"
+        elif [ $UPDATE_EXIT_CODE -eq 0 ]; then
+          echo "CloudFormation stack is being updated..."
           echo "Waiting for stack update to complete..."
           aws cloudformation wait stack-update-complete \
             --stack-name ${{ env.STACK_NAME }} \
             --region ${{ env.AWS_REGION }}
           
-          echo "Stack updated successfully!"
+          echo "Stack updated successfully! ECS services will automatically deploy with new task definitions."
         else
-          # Check if the error is "No updates are to be performed"
-          if grep -q "No updates are to be performed" /tmp/update-output.txt; then
-            echo "No CloudFormation changes detected, but forcing ECS service update to pull latest images..."
-            
-            # Force new deployment for app service to pull latest image
-            aws ecs update-service \
-              --cluster multi-tenant-service-blue \
-              --service multi-tenant-app-service-blue \
-              --force-new-deployment \
-              --region ${{ env.AWS_REGION }}
-            
-            # Force new deployment for worker service to pull latest image
-            aws ecs update-service \
-              --cluster multi-tenant-service-blue \
-              --service multi-tenant-worker-service-blue \
-              --force-new-deployment \
-              --region ${{ env.AWS_REGION }}
-            
-            echo "Forced new deployment for app and worker services"
-          else
-            echo "Stack update failed with unexpected error"
-            cat /tmp/update-output.txt
-            exit 1
-          fi
+          echo "Stack update failed with unexpected error"
+          echo "$OUTPUT"
+          exit 1
         fi
 
     - name: Get stack outputs
