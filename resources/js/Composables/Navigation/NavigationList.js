@@ -1,90 +1,90 @@
-import {
-    ArrowRightStartOnRectangleIcon,
-    PhoneArrowDownLeftIcon,
-    PhoneXMarkIcon,
-    MegaphoneIcon,
-    InboxStackIcon,
-    HandThumbDownIcon,
-    HandThumbUpIcon,
-    HomeIcon,
-    RocketLaunchIcon,
-    CurrencyPoundIcon,
-    BookOpenIcon
-} from "@heroicons/vue/24/outline/index.js";
 import {usePage} from "@inertiajs/vue3";
-import {BarsArrowUpIcon} from "@heroicons/vue/16/solid/index.js";
-import {ExclamationTriangleIcon} from "@heroicons/vue/24/solid";
+import {
+    ChessKnight, LayoutDashboard, LogOut,
+    Megaphone,
+    NotebookTabs,
+    PhoneCall, PhoneMissed, PhoneOff, Pickaxe, Repeat,
+    Trophy,
+    UserRoundCheck,
+    UserRoundX,
+    Workflow
+} from "lucide-vue-next";
 
 export default function NavigationList() {
     const NavList = {
         main: [
-            // {
-            //     path: route('dashboard'),
-            //     name: 'Dashboard',
-            //     icon: HomeIcon,
-            // },
+            {
+                path: route('dashboard'),
+                name: 'Dashboard',
+                icon: LayoutDashboard,
+            },
+            {
+                path: route('web.organisations.index'),
+                name: 'Organisations',
+                icon: ChessKnight,
+            },
             {
                 path: route('web.active-calls.index'),
                 name: 'Active Calls',
-                icon: PhoneArrowDownLeftIcon,
+                icon: PhoneCall,
             },
             {
                 path: route('web.phone-book-entries.index'),
                 name: 'Phone Book',
-                icon: BookOpenIcon,
+                icon: NotebookTabs,
             },
             {
                 path: route('web.competition.index'),
                 name: 'Competitions',
-                icon: CurrencyPoundIcon,
+                icon: Trophy,
             }
         ],
         terminated: [
             {
                 path: route('web.participants.index'),
                 name: 'Participants',
-                icon: HandThumbUpIcon,
+                icon: UserRoundCheck,
             },
             {
                 path: route('web.entries.failed.index'),
                 name: 'Non Entries',
-                icon: HandThumbDownIcon,
+                icon: UserRoundX,
             },
             {
                 path: route('web.orphan-active-calls.index'),
-                name: 'Orphaned Active Calls',
-                icon: PhoneXMarkIcon,
+                name: 'Orphaned Calls',
+                icon: PhoneOff,
             },
         ],
         logs: [
             {
                 path: route('web.api-request-logs.index'),
                 name: 'API Request Logs',
-                icon: InboxStackIcon,
+                icon: Repeat,
             },
             {
                 path: route('web.shout-request-logs.index'),
                 name: 'Shout Audio API Logs',
-                icon: MegaphoneIcon,
+                icon: Megaphone,
             },
             {
                 path: route('web.max-capacity-call-logs.index'),
                 name: 'Max Capacity Call Logs',
-                icon: PhoneXMarkIcon,
+                icon: PhoneMissed,
             }
         ],
         docs: [
             {
                 path: route('web.docs.call-flow'),
                 name: 'Call Flow',
-                icon: RocketLaunchIcon,
+                icon: Workflow,
             }
         ],
         tools: [
             {
                 path: '/horizon',
                 name: 'Queues',
-                icon: BarsArrowUpIcon,
+                icon: Pickaxe,
                 target: '_blank',
             }
         ],
@@ -94,7 +94,7 @@ export default function NavigationList() {
             {
                 path: route('logout'),
                 name: 'Logout',
-                icon: ArrowRightStartOnRectangleIcon,
+                icon: LogOut,
                 method: 'post',
             }
         ]

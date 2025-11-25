@@ -8,6 +8,7 @@ use App\Http\Controllers\DBHealthCheckController;
 use App\Http\Controllers\DeansWebTestController;
 use App\Http\Controllers\LogClearDownController;
 use App\Http\Controllers\HealthCheckController;
+use App\Http\Controllers\OrganisationsController;
 use App\Http\Controllers\Web\ActiveCallsController;
 use App\Http\Controllers\Web\ApiRequestLogsController;
 use App\Http\Controllers\Web\CompetitionClearStatsController;
@@ -28,6 +29,9 @@ Route::get('/db-health-check', DBHealthCheckController::class)->middleware('auth
 
 Route::prefix('web')->middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/organisations', [OrganisationsController::class, 'index'])->name('web.organisations.index');
+
 
     Route::get('/active-calls/', [ActiveCallsController::class, 'index'])->name('web.active-calls.index');
     Route::get('/orphan-active-calls/', [OrphanedActiveCallsController::class, 'index'])->name('web.orphan-active-calls.index');

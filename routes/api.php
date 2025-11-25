@@ -10,7 +10,6 @@ use App\Http\Controllers\CompetitionStatisticsRoundController;
 use App\Http\Controllers\DeansTestController;
 use App\Http\Controllers\AudioFileUploadController;
 use App\Http\Controllers\CreateEntryController;
-use App\Http\Controllers\EntrantAudioDownloadController;
 use App\Http\Controllers\EntrantsDownloadController;
 use App\Http\Controllers\PhoneBookEntryController;
 use App\Http\Controllers\PhoneBookLookupEntryController;
