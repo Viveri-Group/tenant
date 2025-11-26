@@ -59,17 +59,17 @@ const props = defineProps({
                     {{ formatNumber(props.participant.telephone)}}
                 </div>
 
-                <div class="block xl:hidden font-bold text-gray-400">Date:</div>
-                <div class="col-span-2 xl:col-span-2 xl:text-center text-left">
+                <div class="block xl:hidden font-bold text-gray-400">Call Start:</div>
+                <div class="col-span-2 xl:col-span-3 xl:text-center text-left">
                     <DateFormatter :date="participant.call_start" format="do MMM yyyy HH:mm:ss"></DateFormatter>
                 </div>
 
-                <div class="block xl:hidden font-bold text-gray-400">Paid Entry:</div>
-                <div class="col-span-2 xl:col-span-2">
-                    <CheckIcon class="h-5 w-5 text-green-600 mx-auto"
-                               v-if="!props.participant.is_free_entry"></CheckIcon>
-                    <XMarkIcon class="h-5 w-5 text-red-600 mx-auto"
-                               v-if="props.participant.is_free_entry"></XMarkIcon>
+                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
+                <div class="col-span-2 xl:col-span-3 xl:text-center text-left">
+                    <p class="text-sm">
+                        {{props.participant.organisation_name}}
+                        <span class="text-gray-500">({{props.participant.organisation_id}})</span>
+                    </p>
                 </div>
             </div>
         </div>

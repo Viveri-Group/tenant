@@ -29,8 +29,9 @@ const props = defineProps({
 
                     <div v-if="props.orphan.competition_id">
                         <Link
-                          :href="route('web.competition.show', {competition: props.orphan.competition_id})"
-                          class="text-blue-600 underline">{{'Comp ID: ' + props.orphan.competition_id}}</Link>
+                            :href="route('web.competition.show', {competition: props.orphan.competition_id})"
+                            class="text-blue-600 underline">{{ 'Comp ID: ' + props.orphan.competition_id }}
+                        </Link>
                     </div>
                     <p v-text="'Comp ID: -'" v-else></p>
 
@@ -45,35 +46,44 @@ const props = defineProps({
                 <div class="block xl:hidden col-span-2 xl:col-span-1 xl:text-center">
                     <Link v-if="props.orphan.competition_id"
                           :href="route('web.competition.show', {competition: props.orphan.competition_id})"
-                          class="text-blue-600 underline">{{props.orphan.competition_id}}</Link>
+                          class="text-blue-600 underline">{{ props.orphan.competition_id }}
+                    </Link>
                     <p v-text="props.orphan.competition_id" v-else></p>
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Call ID:</div>
                 <div class="block xl:hidden col-span-2 xl:col-span-2 xl:text-center">
-                    {{ props.orphan.call_id}}
+                    {{ props.orphan.call_id }}
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Competition Phone Number:</div>
                 <div class="col-span-2 xl:col-span-2 xl:text-center">
-                    {{ formatNumber(props.orphan.phone_number)}}
+                    {{ formatNumber(props.orphan.phone_number) }}
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Caller Phone Number:</div>
                 <div class="col-span-2 xl:col-span-2 xl:text-center">
-                    {{ formatNumber(props.orphan.caller_phone_number)}}
+                    {{ formatNumber(props.orphan.caller_phone_number) }}
+                </div>
+
+                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
+                <div class="col-span-2 xl:col-span-2 text-left xl:text-center">
+                    <p class="text-sm">
+                        {{props.orphan.organisation_name}}
+                        <span class="text-gray-500">({{props.orphan.organisation_id}})</span>
+                    </p>
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Status:</div>
-                <div class="col-span-2 xl:col-span-3 text-center">
-                    <p class="bg-gray-500 text-white px-2 py-1 break-all rounded-lg w-auto text-xs"
-                       v-if="props.orphan.status"
-                       v-text="props.orphan.status"
+                <div class="col-span-2 xl:col-span-2 text-left xl:text-center">
+                    <p
+                        class="inline-block bg-gray-500 text-white px-2 py-1 break-all rounded-lg text-xs"
+                        v-text="props.orphan.status"
                     ></p>
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Date:</div>
-                <div class="col-span-2 xl:col-span-3 xl:text-center text-left">
+                <div class="col-span-2 xl:col-span-2 xl:text-center text-left">
                     <template v-if="props.orphan.original_call_time">
                         <DateFormatter :date="props.orphan.original_call_time"
                                        format="do MMM yyyy HH:mm:ss">

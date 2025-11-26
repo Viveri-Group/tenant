@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActiveCallOrphan extends Model
 {
@@ -17,5 +18,10 @@ class ActiveCallOrphan extends Model
     public function prunable()
     {
         return static::where('created_at', '<=', now()->subMonth());
+    }
+
+    public function organisation(): BelongsTo
+    {
+        return $this->belongsTo(Organisation::class);
     }
 }

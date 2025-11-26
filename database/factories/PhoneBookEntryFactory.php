@@ -13,12 +13,10 @@ class PhoneBookEntryFactory extends Factory
 
     public function definition(): array
     {
-        $costs = ['1.50', '2.00', '2.50'];
 
         return [
             'organisation_id' => Organisation::factory(),
             'phone_number' => $this->faker->numerify('44##########'),
-            'cost' => $costs[array_rand($costs)],
 
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),

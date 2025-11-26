@@ -29,8 +29,9 @@ const props = defineProps({
 
                     <div v-if="props.failedEntry.competition_id">
                         <Link
-                          :href="route('web.competition.show', {competition: props.failedEntry.competition_id})"
-                          class="text-blue-600 underline">{{'Comp ID: ' + props.failedEntry.competition_id}}</Link>
+                            :href="route('web.competition.show', {competition: props.failedEntry.competition_id})"
+                            class="text-blue-600 underline">{{ 'Comp ID: ' + props.failedEntry.competition_id }}
+                        </Link>
                     </div>
                     <p v-text="'Comp ID: -'" v-else></p>
 
@@ -44,34 +45,46 @@ const props = defineProps({
                 <div class="block xl:hidden font-bold text-gray-400">Competition ID:</div>
                 <div class="block xl:hidden col-span-2 xl:col-span-1 xl:text-center">
                     <Link v-if="props.failedEntry.competition_id"
-                        :href="route('web.competition.show', {competition: props.failedEntry.competition_id})"
-                        class="text-blue-600 underline">{{props.failedEntry.competition_id}}</Link>
+                          :href="route('web.competition.show', {competition: props.failedEntry.competition_id})"
+                          class="text-blue-600 underline">{{ props.failedEntry.competition_id }}
+                    </Link>
                     <p v-text="props.failedEntry.competition_id" v-else></p>
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Call ID:</div>
                 <div class="block xl:hidden col-span-2 xl:col-span-2 xl:text-center">
-                    {{ props.failedEntry.call_id}}
+                    {{ props.failedEntry.call_id }}
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Competition Phone Number:</div>
                 <div class="col-span-2 xl:col-span-2 xl:text-center">
-                    {{ formatNumber(props.failedEntry.phone_number)}}
+                    {{ formatNumber(props.failedEntry.phone_number) }}
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Caller Phone Number:</div>
                 <div class="col-span-2 xl:col-span-2 xl:text-center">
-                    {{ formatNumber(props.failedEntry.caller_phone_number)}}
+                    {{ formatNumber(props.failedEntry.caller_phone_number) }}
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Reason:</div>
-                <div class="col-span-2 xl:col-span-3 text-center">
-                    <p class="bg-gray-500 text-white px-2 py-1 break-all rounded-lg w-auto text-xs" v-text="props.failedEntry.reason"></p>
+                <div class="col-span-2 xl:col-span-2 text-left xl:text-center">
+                    <p
+                        class="inline-block bg-gray-500 text-white px-2 py-1 break-all rounded-lg text-xs"
+                        v-text="props.failedEntry.reason"
+                    ></p>
                 </div>
 
-                <div class="block xl:hidden font-bold text-gray-400">Date:</div>
+                <div class="block xl:hidden font-bold text-gray-400">Call Start:</div>
                 <div class="col-span-2 xl:col-span-2 xl:text-center text-left">
                     <DateFormatter :date="failedEntry.call_start" format="do MMM yyyy HH:mm:ss"></DateFormatter>
+                </div>
+
+                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
+                <div class="col-span-2 xl:col-span-2 xl:text-center text-left">
+                    <p class="text-sm">
+                        {{ props.failedEntry.organisation_name }}
+                        <span class="text-gray-500">({{ props.failedEntry.organisation_id }})</span>
+                    </p>
                 </div>
             </div>
         </div>

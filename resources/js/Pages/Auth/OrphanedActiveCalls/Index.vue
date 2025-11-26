@@ -71,12 +71,17 @@ const updateSearchCriteria = (searchParams) => {
                                 <tip description="The caller phone number."></tip>
                             </p>
 
-                            <p class="col-span-3 text-center">
+                            <p class="col-span-2 text-center">
+                                Organisation
+                                <tip description="The owner of the competition."></tip>
+                            </p>
+
+                            <p class="col-span-2 text-center">
                                 Status
                                 <tip description="If status of the call."></tip>
                             </p>
 
-                            <p class="col-span-3 text-center">
+                            <p class="col-span-2 text-center">
                                 Original Call <tip description="Time the call was originally placed."></tip> <br>
                                 Orphaned <tip description="Time the call was orphaned at."></tip>
                             </p>

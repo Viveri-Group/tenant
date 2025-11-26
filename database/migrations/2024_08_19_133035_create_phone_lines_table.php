@@ -11,7 +11,6 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('competition_id')->constrained('competitions');
             $table->string('phone_number',12);
-            $table->string('cost')->comment('the cost of the call to the caller.');
             $table->softDeletes();
             $table->timestamps();
         });

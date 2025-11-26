@@ -18,7 +18,6 @@ class CompetitionPhoneLineFactory extends Factory
             'organisation_id' => Organisation::factory(),
             'competition_id' => Competition::factory(),
             'phone_number' => $this->faker->numerify('############'),
-            'cost'=>'1.50',
 
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),

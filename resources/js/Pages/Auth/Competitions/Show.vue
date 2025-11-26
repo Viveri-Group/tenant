@@ -228,12 +228,7 @@ const failDescriptions = {
 
 
                             <Tab
-                                :name="formatNumber(phoneLine.attributes.number)  + '<br />' + phoneBook[phoneLine.attributes.number] + ' (£' + phoneLine.attributes.cost + ')' || 'Unknown Number '+ index">
-                                <info>Note -&nbsp;<span class="font-bold">CALL_COST_WARNING</span>&nbsp;and&nbsp;<span
-                                    class="font-bold">CAPPING_MESSAGE</span>&nbsp;default audios are automatically
-                                    replaced with cost-specific versions based on the phone line cost.
-                                </info>
-
+                                :name="formatNumber(phoneLine.attributes.number)  + '<br />' + phoneBook[phoneLine.attributes.number] || 'Unknown Number '+ index">
                                 <div class="flex justify-between mb-4 mt-4 sm:mt-0">
                                     <span class="border rounded-md p-2 text-sm text-gray-400">
                                         Phone Number: {{ formatNumber(phoneLine.attributes.number) }}

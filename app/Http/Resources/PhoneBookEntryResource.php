@@ -15,7 +15,6 @@ class PhoneBookEntryResource extends JsonResource
             'attributes' => [
                 'phone_number' => $this->phone_number,
                 'name' => $this->name,
-                'cost' => $this->cost,
             ]
         ];
     }

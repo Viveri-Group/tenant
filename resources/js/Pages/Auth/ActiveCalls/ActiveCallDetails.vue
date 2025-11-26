@@ -65,12 +65,23 @@ const props = defineProps({
                     {{ formatNumber(props.activeCall.caller_phone_number)}}
                 </div>
 
+                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
+                <div class="col-span-2 xl:col-span-2 text-left xl:text-center">
+                    <p class="text-sm">
+                        {{props.activeCall.organisation_name}}
+                        <span class="text-gray-500">({{props.activeCall.organisation_id}})</span>
+                    </p>
+                </div>
+
                 <div class="block xl:hidden font-bold text-gray-400">Status:</div>
-                <div class="col-span-2 xl:col-span-4">
-                    <p class="bg-gray-500 text-white px-2 py-1 break-all rounded-lg w-auto text-xs text-center"
-                       v-if="props.activeCall.status" v-text="props.activeCall.status"
+                <div class="col-span-2 xl:col-span-2 text-left xl:text-center">
+                    <p
+                        class="inline-block bg-gray-500 text-white px-2 py-1 break-all rounded-lg text-xs"
+                        v-if="props.activeCall.status"
+                        v-text="props.activeCall.status"
                     ></p>
-                    <p v-else class="text-gray-400 xl:text-center">-</p>
+
+                    <p v-else class="text-gray-400">-</p>
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Date:</div>

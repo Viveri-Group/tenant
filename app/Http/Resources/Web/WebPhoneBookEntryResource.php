@@ -9,13 +9,16 @@ class WebPhoneBookEntryResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $this->resource->loadMissing(['organisation']);
+
         return [
             'type' => 'phone-book-entry',
             'id' => $this->id,
             'attributes' => [
                 'phone_number' => $this->phone_number,
                 'name' => $this->name,
-                'cost' => $this->cost,
+                'organisation_id' => $this->organisation->id,
+                'organisation_name' => $this->organisation->name
             ]
         ];
     }

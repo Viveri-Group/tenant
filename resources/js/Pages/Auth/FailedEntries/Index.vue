@@ -72,7 +72,7 @@ const updateSearchCriteria = (searchParams) => {
                                 <tip description="The caller phone number."></tip>
                             </p>
 
-                            <p class="col-span-3 text-center">
+                            <p class="col-span-2 text-center">
                                 Reason
                                 <tip description="Reason the call failed."></tip>
                             </p>
@@ -80,6 +80,11 @@ const updateSearchCriteria = (searchParams) => {
                             <p class="col-span-2 text-center">
                                 Call Start
                                 <tip description="The time the call started."></tip>
+                            </p>
+
+                            <p class="col-span-2 text-center">
+                                Organisation
+                                <tip description="The owner of the competition."></tip>
                             </p>
                         </div>
                     </div>

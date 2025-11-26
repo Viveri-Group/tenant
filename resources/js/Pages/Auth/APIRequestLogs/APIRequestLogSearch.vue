@@ -60,48 +60,48 @@ const clearForm = () => {
         <SearchContainer heading="Search API Request Logs" storage-key="hide_api_request_log_search_panel">
             <form @submit.prevent="submit">
                 <div class="grid grid-cols-12 gap-x-4 gap-y-1">
-                    <Input label="UUID"
-                           name="uuid"
-                           tip="The ID of the competition."
-                           v-model="form.uuid"
-                           class="col-span-12 sm:col-span-6 xl:col-span-4"
-                    ></Input>
+<!--                    <Input label="UUID"-->
+<!--                           name="uuid"-->
+<!--                           tip="The ID of the competition."-->
+<!--                           v-model="form.uuid"-->
+<!--                           class="col-span-12 sm:col-span-6 xl:col-span-4"-->
+<!--                    ></Input>-->
 
-                    <Select label="User"
-                            name="user_id"
-                            tip="The user who made the request."
-                            :has-default="true"
-                            :options="props.defaultSearchFormOptions.users"
-                            v-model="form.user_id"
-                            class="col-span-12 sm:col-span-6 xl:col-span-3"
-                    ></Select>
+<!--                    <Select label="User"-->
+<!--                            name="user_id"-->
+<!--                            tip="The user who made the request."-->
+<!--                            :has-default="true"-->
+<!--                            :options="props.defaultSearchFormOptions.users"-->
+<!--                            v-model="form.user_id"-->
+<!--                            class="col-span-12 sm:col-span-6 xl:col-span-3"-->
+<!--                    ></Select>-->
 
                     <Input label="Request Type"
                            name="request_type"
                            tip="The request type."
                            v-model="form.request_type"
-                           class="col-span-12 sm:col-span-4 xl:col-span-5"
-                    ></Input>
-
-                    <Input label="Request Input"
-                           name="request_input"
-                           tip="Information passed to the request."
-                           v-model="form.request_input"
                            class="col-span-12 sm:col-span-4 xl:col-span-4"
                     ></Input>
 
-                    <Input label="Request Output"
-                           name="request_output"
-                           tip="Information returned from the request."
-                           v-model="form.request_output"
-                           class="col-span-12 sm:col-span-4 xl:col-span-4"
-                    ></Input>
+<!--                    <Input label="Request Input"-->
+<!--                           name="request_input"-->
+<!--                           tip="Information passed to the request."-->
+<!--                           v-model="form.request_input"-->
+<!--                           class="col-span-12 sm:col-span-4 xl:col-span-4"-->
+<!--                    ></Input>-->
+
+<!--                    <Input label="Request Output"-->
+<!--                           name="request_output"-->
+<!--                           tip="Information returned from the request."-->
+<!--                           v-model="form.request_output"-->
+<!--                           class="col-span-12 sm:col-span-4 xl:col-span-4"-->
+<!--                    ></Input>-->
 
                     <Input label="Call ID"
                            name="call_id"
                            tip="The relating Shout Call ID if applicable."
                            v-model="form.call_id"
-                           class="col-span-12 sm:col-span-4 xl:col-span-4"
+                           class="col-span-12 sm:col-span-4 xl:col-span-2"
                     ></Input>
 
                     <Input label="Caller Number"
@@ -118,12 +118,12 @@ const clearForm = () => {
                            class="col-span-12 sm:col-span-4 xl:col-span-3"
                     ></Input>
 
-                    <Input label="HTTP Response"
-                           name="response_status"
-                           tip="The http response status code."
-                           v-model="form.response_status"
-                           class="col-span-12 sm:col-span-6 xl:col-span-3"
-                    ></Input>
+<!--                    <Input label="HTTP Response"-->
+<!--                           name="response_status"-->
+<!--                           tip="The http response status code."-->
+<!--                           v-model="form.response_status"-->
+<!--                           class="col-span-12 sm:col-span-6 xl:col-span-3"-->
+<!--                    ></Input>-->
 
                     <Select label="Request Duration"
                             name="duration"
@@ -131,7 +131,7 @@ const clearForm = () => {
                             :has-default="true"
                             :options="[{label:'0ms - 500ms', value: '1'},{label:'501ms - 1000ms', value: '2'},{label:'1000ms and greater', value: '3'}]"
                             v-model="form.duration"
-                            class="col-span-12 sm:col-span-6 xl:col-span-3"
+                            class="col-span-12 sm:col-span-6 xl:col-span-4"
                     ></Select>
 
                     <Input label="Date From"

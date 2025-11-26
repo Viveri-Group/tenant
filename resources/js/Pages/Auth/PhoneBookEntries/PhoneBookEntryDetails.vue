@@ -28,18 +28,21 @@ const props = defineProps({
 
 
                 <div class="block xl:hidden font-bold text-gray-400">Name:</div>
-                <div class="col-span-2 xl:col-span-4">
+                <div class="col-span-2 xl:col-span-3">
                     {{ formatNumber(props.phoneBookEntry.attributes.name)}}
+                </div>
+
+                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
+                <div class="col-span-2 xl:col-span-2">
+                    <p class="text-sm">
+                        {{props.phoneBookEntry.attributes.organisation_name}}
+                        <span class="text-gray-500">({{props.phoneBookEntry.attributes.organisation_id}})</span>
+                    </p>
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Phone Number:</div>
                 <div class="col-span-2 xl:col-span-2">
                     {{ formatNumber(props.phoneBookEntry.attributes.phone_number)}}
-                </div>
-
-                <div class="block xl:hidden font-bold text-gray-400">Cost:</div>
-                <div class="col-span-2 xl:col-span-1">
-                    {{ '&pound;'+formatNumber(props.phoneBookEntry.attributes.cost)}}
                 </div>
 
                 <div class="col-span-3 xl:col-span-4 flex justify-end gap-2">

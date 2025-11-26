@@ -195,7 +195,12 @@ const handleAutoReload = () => {
                                 <tip description="The caller phone number."></tip>
                             </p>
 
-                            <p class="col-span-4 text-center">
+                            <p class="col-span-2 text-center">
+                                Organisation
+                                <tip description="Owner of the phone line."></tip>
+                            </p>
+
+                            <p class="col-span-2 text-center">
                                 Status
                                 <tip description="Current status of the call."></tip>
                             </p>

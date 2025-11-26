@@ -17,7 +17,6 @@ class WebPhoneLineResource extends JsonResource
             'attributes' => [
                 'number' => $this->phone_number,
                 'files' => FileUploadResource::collection($this->files),
-                'cost' => $this->cost
             ]
         ];
     }

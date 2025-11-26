@@ -11,7 +11,6 @@ return new class extends Migration {
             $table->id();
             $table->string('phone_number', 12)->unique();
             $table->string('name')->nullable()->comment('name of the radio station/phone line');
-            $table->string('cost')->comment('the cost of the call to the caller.');
             $table->timestamps();
             $table->softDeletes();
         });

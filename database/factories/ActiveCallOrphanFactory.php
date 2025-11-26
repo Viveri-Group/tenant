@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\ActiveCallOrphan;
+use App\Models\Competition;
+use App\Models\Organisation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
@@ -13,6 +15,7 @@ class ActiveCallOrphanFactory extends Factory
     public function definition(): array
     {
         return [
+            'organisation_id' => Organisation::factory(),
             'competition_id' => null,
             'call_id' => $this->faker->randomNumber(),
             'phone_number' => $this->faker->numerify('############'),

@@ -23,7 +23,6 @@ class ActiveCallFactory extends Factory
             'phone_number' => $this->faker->numerify('############'),
             'caller_phone_number' => $this->faker->numerify('############'),
             'status' => 'OPEN',
-            'call_cost' => '0',
             'cli_presentation' => 2,
             'round_start' => '2024-01-01 10:00:00',
             'round_end' => '2024-01-10 10:00:00',
@@ -41,7 +40,6 @@ class ActiveCallFactory extends Factory
             return [
                 'competition_id' => $competition->id,
                 'phone_number' => $competition->phoneLines()->first()->phone_number,
-                'cost' => '1.50'
             ];
         });
     }

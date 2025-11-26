@@ -38,19 +38,19 @@ const props = defineProps({
                                 <tip description="Internal ID of the entry."></tip>
                             </p>
 
-                            <p class="col-span-4">
+                            <p class="col-span-3">
                                 Name
                                 <tip description="Description of the phone line number."></tip>
                             </p>
 
                             <p class="col-span-2">
-                                Phone Number
-                                <tip description="The competition phone number."></tip>
+                                Organisation
+                                <tip description="The owner of this phone line."></tip>
                             </p>
 
-                            <p class="col-span-1">
-                                Cost
-                                <tip description="Cost assigned to calling this phone line."></tip>
+                            <p class="col-span-2">
+                                Phone Number
+                                <tip description="The competition phone number."></tip>
                             </p>
                         </div>
                     </div>

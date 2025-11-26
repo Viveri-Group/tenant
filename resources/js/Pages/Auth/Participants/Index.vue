@@ -71,14 +71,14 @@ const updateSearchCriteria = (searchParams) => {
                                 <tip description="The caller phone number."></tip>
                             </p>
 
-                            <p class="col-span-2 text-center">
+                            <p class="col-span-3 text-center">
                                 Call Start
                                 <tip description="The time the call started."></tip>
                             </p>
 
-                            <p class="col-span-2 text-center">
-                                Paid Entry
-                                <tip description="Is this a free entry ie BOGOF or is it a paid entry."></tip>
+                            <p class="col-span-3 text-center">
+                                Organisation
+                                <tip description="The owner of the competition."></tip>
                             </p>
                         </div>
                     </div>
