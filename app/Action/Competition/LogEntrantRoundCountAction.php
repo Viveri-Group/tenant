@@ -12,17 +12,12 @@ class LogEntrantRoundCountAction
     public function handle(
         ActiveCallDTO $activeCallDTO,
         Participant $participant,
-        bool $isPaidForEntry,
         bool $addFreeEntry = false
     ): void
     {
         $update = [
             'total_entry_count' => DB::raw('total_entry_count + 1'),
         ];
-
-        if($isPaidForEntry) {
-            $update['paid_entry_count'] = DB::raw('paid_entry_count + 1');
-        }
 
         if ($addFreeEntry) {
             $freeParticipant = $participant->replicate();

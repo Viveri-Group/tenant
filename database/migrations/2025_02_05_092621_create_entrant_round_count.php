@@ -13,7 +13,6 @@ return new class extends Migration {
             $table->foreignId('competition_id')->comment('competition id - not really required just helpful to see')->constrained('competitions');
             $table->string('caller_number', 12)->comment('competition id - not really required just helpful to see');
             $table->integer('total_entry_count')->default(0)->comment('the number of times this entrant has entered this round');
-            $table->integer('paid_entry_count')->default(0)->comment('the number of times this entrant has entered this round for free');
 
             $table->timestamps();
         });

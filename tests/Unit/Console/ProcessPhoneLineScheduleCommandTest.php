@@ -112,7 +112,6 @@ class ProcessPhoneLineScheduleCommandTest extends TestCase
             'id' => $originalPhoneLine->id,
             'competition_id' => $originalPhoneLine->competition_id,
             'phone_number' => $originalPhoneLine->phone_number,
-            'cost' => $originalPhoneLine->cost,
         ];
 
         $schedule = PhoneLineSchedule::factory()->create([
@@ -132,51 +131,12 @@ class ProcessPhoneLineScheduleCommandTest extends TestCase
             $this->assertSame($expectedCompPhoneLineDetails['id'], $competitionPhoneLine->id);
             $this->assertSame($expectedCompPhoneLineDetails['competition_id'], $competitionPhoneLine->competition_id);
             $this->assertSame($expectedCompPhoneLineDetails['phone_number'], $competitionPhoneLine->phone_number);
-            $this->assertSame($expectedCompPhoneLineDetails['cost'], $competitionPhoneLine->cost);
         });
 
         tap($schedule, function (PhoneLineSchedule $schedule) {
             $this->assertTrue($schedule->processed);
             $this->assertNotNull($schedule->completed_at);
             $this->assertSame($schedule->notes, "Schedule {$schedule->id} skipped: competition {$schedule->competition_id} does not exist.");
-            $this->assertFalse($schedule->success);
-        });
-    }
-
-    public function test_cost_on_phone_line_is_not_set()
-    {
-        $originalPhoneLine = $this->competitionOld->phoneLines()->first();
-
-        $expectedCompPhoneLineDetails = [
-            'id' => $originalPhoneLine->id,
-            'competition_id' => $originalPhoneLine->competition_id,
-            'phone_number' => $originalPhoneLine->phone_number,
-            'cost' => $originalPhoneLine->cost,
-        ];
-
-        $schedule = PhoneLineSchedule::factory()->create([
-            'competition_phone_number' => '441234567891',
-            'competition_id' => $this->competitionNew->id,
-            'action_at' => '2004-04-30 09:10:00',
-        ]);
-
-        $this->artisan('viveri:process-phone-line-schedule');
-
-        $schedule->refresh();
-
-        $this->assertCount(1, $compPhoneLines = CompetitionPhoneLine::all());
-
-        tap($compPhoneLines->first(), function (CompetitionPhoneLine $competitionPhoneLine) use ($expectedCompPhoneLineDetails) {
-            $this->assertSame($expectedCompPhoneLineDetails['id'], $competitionPhoneLine->id);
-            $this->assertSame($expectedCompPhoneLineDetails['competition_id'], $competitionPhoneLine->competition_id);
-            $this->assertSame($expectedCompPhoneLineDetails['phone_number'], $competitionPhoneLine->phone_number);
-            $this->assertSame($expectedCompPhoneLineDetails['cost'], $competitionPhoneLine->cost);
-        });
-
-        tap($schedule, function (PhoneLineSchedule $schedule) {
-            $this->assertTrue($schedule->processed);
-            $this->assertNotNull($schedule->completed_at);
-            $this->assertSame($schedule->notes, 'Missing cost for phone number: 441234567891');
             $this->assertFalse($schedule->success);
         });
     }

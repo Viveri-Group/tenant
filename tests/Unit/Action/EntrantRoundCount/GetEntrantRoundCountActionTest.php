@@ -16,11 +16,10 @@ class GetEntrantRoundCountActionTest extends TestCase
         EntrantRoundCount::factory()->create([
             'hash' => hash('xxh128', "{$activeCall->competition_id} {$activeCall->caller_phone_number}"),
             'total_entry_count' => 10,
-            'paid_entry_count' => 2
         ]);
 
         $this->assertEqualsCanonicalizing(
-            [ "total_entry_count" => 10, "paid_entry_count" => 2 ],
+            [ "total_entry_count" => 10 ],
             (new GetEntrantRoundCountAction())->handle($activeCall)
         );
     }
@@ -30,7 +29,7 @@ class GetEntrantRoundCountActionTest extends TestCase
         $activeCall = ActiveCall::factory()->create();
 
         $this->assertEqualsCanonicalizing(
-            [ "total_entry_count" => 0, "paid_entry_count" => 0 ],
+            [ "total_entry_count" => 0 ],
             (new GetEntrantRoundCountAction())->handle($activeCall)
         );
     }

@@ -11,7 +11,6 @@ class GetOrganisationsAction
     {
         return Cache::remember('organisations_keyed', 600, function () {
             return Organisation::all()
-                ->sortBy('name')
                 ->mapWithKeys(fn($org) => [
                     $org->id => [
                         'id' => $org->id,

@@ -82,7 +82,6 @@ class CreateEntryJobTest extends TestCase
             $this->assertSame($activeCallDTO->competition_id, $roundCount->competition_id);
             $this->assertSame($callerPhoneNumber, $roundCount->caller_number);
             $this->assertSame(1, $roundCount->total_entry_count);
-            $this->assertSame(1, $roundCount->paid_entry_count);
         });
     }
 
@@ -178,7 +177,6 @@ class CreateEntryJobTest extends TestCase
             $this->assertSame($activeCallDTO->competition_id, $roundCount->competition_id);
             $this->assertSame($callerPhoneNumber, $roundCount->caller_number);
             $this->assertSame(2, $roundCount->total_entry_count);
-            $this->assertSame(1, $roundCount->paid_entry_count);
         });
     }
 }

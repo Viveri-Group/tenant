@@ -32,7 +32,6 @@ class RemoveFailedEntryParticipantsActionTest extends TestCase
         $round = EntrantRoundCount::factory()->create([
             'hash' => hash('xxh128', "{$this->dto->competition_id} {$this->dto->caller_phone_number}"),
             'total_entry_count' => 10,
-            'paid_entry_count' => 10,
         ]);
 
         (new RemoveFailedEntryParticipantsAction())->handle($this->dto);
@@ -46,7 +45,6 @@ class RemoveFailedEntryParticipantsActionTest extends TestCase
         // Assert: round counts decremented
         $round->refresh();
         $this->assertEquals(7, $round->total_entry_count); // 10 - 3
-        $this->assertEquals(8, $round->paid_entry_count);  // 10 - 2
     }
 
     public function test_it_deletes_participants_but_skips_round_count_if_none_exists(): void
@@ -74,7 +72,6 @@ class RemoveFailedEntryParticipantsActionTest extends TestCase
         $round = EntrantRoundCount::factory()->create([
             'hash' => hash('xxh128', "{$this->dto->competition_id} {$this->dto->caller_phone_number}"),
             'total_entry_count' => 1,
-            'paid_entry_count' => 1,
         ]);
 
         // Act
@@ -83,7 +80,6 @@ class RemoveFailedEntryParticipantsActionTest extends TestCase
         // Assert: clamped to 0
         $round->refresh();
         $this->assertEquals(0, $round->total_entry_count);
-        $this->assertEquals(0, $round->paid_entry_count);
     }
 
     public function test_it_handles_no_participants_gracefully(): void
@@ -91,7 +87,6 @@ class RemoveFailedEntryParticipantsActionTest extends TestCase
         $round = EntrantRoundCount::factory()->create([
             'hash' => hash('xxh128', "{$this->dto->competition_id} {$this->dto->caller_phone_number}"),
             'total_entry_count' => 5,
-            'paid_entry_count' => 3,
         ]);
 
         // Act (no participants to delete)
@@ -100,6 +95,5 @@ class RemoveFailedEntryParticipantsActionTest extends TestCase
         // Assert: round unchanged
         $round->refresh();
         $this->assertEquals(5, $round->total_entry_count);
-        $this->assertEquals(3, $round->paid_entry_count);
     }
 }

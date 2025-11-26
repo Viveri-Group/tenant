@@ -57,9 +57,7 @@ class CreateEntryTest extends TestCase
             $this->assertEquals($activeCall->phone_number, $job->activeCallDTO->competition_phone_number);
             $this->assertEquals($activeCall->caller_phone_number, $job->activeCallDTO->caller_phone_number);
             $this->assertEquals($activeCall->status, $job->activeCallDTO->status);
-            $this->assertEquals($activeCall->call_cost, $job->activeCallDTO->call_cost);
             $this->assertEquals($activeCall->status, $job->activeCallDTO->status);
-            $this->assertEquals($activeCall->call_cost, $job->activeCallDTO->call_cost);
             $this->assertEquals($activeCall->round_start, $job->activeCallDTO->round_start);
             $this->assertEquals($activeCall->round_end, $job->activeCallDTO->round_end);
             $this->assertNull($job->activeCallDTO->call_end);

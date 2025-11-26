@@ -24,7 +24,6 @@ class CreateEntryController extends Controller
                 $activeCall->phone_number,
                 $activeCall->caller_phone_number,
                 $activeCall->status,
-                $activeCall->call_cost,
                 $activeCall->round_start,
                 $activeCall->round_end,
                 null,

@@ -6,7 +6,7 @@ import LayoutBox from "@/Components/Layout/LayoutBox.vue";
 import Tip from "@/Components/Tip/Tip.vue";
 import OrganisationsDetails from "@/Pages/Auth/Organisations/OrganisationsDetails.vue";
 
-const organisations = usePage().props.auth.organisations;
+const organisations = Object.values(usePage().props.auth.organisations).sort((a, b) => a.name.localeCompare(b.name));
 </script>
 
 <template>
