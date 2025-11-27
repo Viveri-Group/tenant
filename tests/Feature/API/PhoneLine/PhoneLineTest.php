@@ -22,11 +22,11 @@ class PhoneLineTest extends TestCase
 
         $this->competition = Competition::factory(['organisation_id' => $this->organisation->id])->create();
 
-        PhoneBookEntry::factory()->create(['phone_number' => '07222333333', 'cost' => '1.50', 'organisation_id' => $this->organisation->id]);
-        PhoneBookEntry::factory()->create(['phone_number' => '07222555555', 'cost' => '1.50', 'organisation_id' => $this->organisation->id]);
-        PhoneBookEntry::factory()->create(['phone_number' => '07222666666', 'cost' => '1.50', 'organisation_id' => $this->organisation->id]);
-        PhoneBookEntry::factory()->create(['phone_number' => '072227777777', 'cost' => '1.50', 'organisation_id' => $this->organisation->id]);
-        PhoneBookEntry::factory()->create(['phone_number' => '07555333333', 'cost' => '1.50', 'organisation_id' => $this->organisation->id]);
+        PhoneBookEntry::factory()->create(['phone_number' => '07222333333', 'organisation_id' => $this->organisation->id]);
+        PhoneBookEntry::factory()->create(['phone_number' => '07222555555', 'organisation_id' => $this->organisation->id]);
+        PhoneBookEntry::factory()->create(['phone_number' => '07222666666', 'organisation_id' => $this->organisation->id]);
+        PhoneBookEntry::factory()->create(['phone_number' => '072227777777', 'organisation_id' => $this->organisation->id]);
+        PhoneBookEntry::factory()->create(['phone_number' => '07555333333', 'organisation_id' => $this->organisation->id]);
     }
 
     public function test_can_create_phone_line()
@@ -49,7 +49,7 @@ class PhoneLineTest extends TestCase
     {
         $orgB = Organisation::factory()->create();
 
-        PhoneBookEntry::factory()->create(['phone_number' => '441111111111', 'cost' => '1.50', 'organisation_id' => $orgB->id]);
+        PhoneBookEntry::factory()->create(['phone_number' => '441111111111', 'organisation_id' => $orgB->id]);
 
         $this->assertCount(0, CompetitionPhoneLine::all());
 

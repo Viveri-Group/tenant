@@ -18,7 +18,7 @@ class CreateEntryJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public ActiveCallDTO $activeCallDTO, public bool $createFreeEntry = false)
+    public function __construct(public ActiveCallDTO $activeCallDTO)
     {
     }
 
@@ -30,13 +30,9 @@ class CreateEntryJob implements ShouldQueue
 
         $participant = (new CreateParticipantFromActiveCallDTOAction())->handle($this->activeCallDTO);
 
-        $phoneLine = CompetitionPhoneLine::find($this->activeCallDTO->competition_phone_line_id);
-
         (new LogEntrantRoundCountAction())->handle(
             $this->activeCallDTO,
-            $participant,
-            floatval($phoneLine->cost) > 0,
-            $this->createFreeEntry
+            $participant
         );
     }
 }

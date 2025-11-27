@@ -88,7 +88,6 @@ class CompetitionCheckTest extends TestCase
                     ->where('competition_id', null)
                     ->where('status', 'REJECT_CALLER')
                     ->where('total_entry_count', 0)
-                    ->where('paid_entry_count', 0)
                     ->where('entries_warning', 0)
                     ->where('max_paid_entries', null)
                     ->where('special_offer', 'FALSE')
@@ -167,7 +166,6 @@ class CompetitionCheckTest extends TestCase
                     ->has('active_call_id')
                     ->where('status', 'CLOSED')
                     ->where('total_entry_count', 0)
-                    ->where('paid_entry_count', 0)
                     ->where('entries_warning', 0)
                     ->where('max_paid_entries', 2)
                     ->where('special_offer', 'FALSE');
@@ -211,7 +209,6 @@ class CompetitionCheckTest extends TestCase
                     ->has('active_call_id')
                     ->where('status', 'OPEN')
                     ->where('total_entry_count', 0)
-                    ->where('paid_entry_count', 0)
                     ->where('entries_warning', 0)
                     ->where('max_paid_entries', 4)
                     ->where('special_offer', 'BOGOF');
@@ -254,7 +251,6 @@ class CompetitionCheckTest extends TestCase
         EntrantRoundCount::factory()->create([
             'hash' => hash('xxh128', "{$competition->id} 441604556778"),
             'total_entry_count' => 15,
-            'paid_entry_count' => 2
         ]);
 
         DB::enableQueryLog();
@@ -271,7 +267,6 @@ class CompetitionCheckTest extends TestCase
                     ->has('active_call_id')
                     ->where('status', 'OPEN')
                     ->where('total_entry_count', 15)
-                    ->where('paid_entry_count', 2)
                     ->where('entries_warning', 4)
                     ->where('max_paid_entries', 3)
                     ->where('special_offer', 'FALSE');

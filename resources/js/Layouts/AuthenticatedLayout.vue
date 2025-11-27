@@ -59,6 +59,7 @@ const userNavDropDownIsVisible = ref(false);
                                 <nav class="flex flex-1 flex-col">
                                     <ul role="list" class="flex flex-1 flex-col gap-y-4">
                                         <Navigation></Navigation>
+                                        <Navigation section="administration" heading="Administration"></Navigation>
                                         <Navigation section="terminated" heading="Terminated"></Navigation>
                                         <Navigation section="logs" heading="Logs"></Navigation>
                                         <Navigation section="docs" heading="Documentation"></Navigation>
@@ -85,6 +86,7 @@ const userNavDropDownIsVisible = ref(false);
                 <nav class="flex flex-1 flex-col">
                     <ul role="list" class="flex flex-1 flex-col gap-y-4">
                         <Navigation></Navigation>
+                        <Navigation section="administration" heading="Administration"></Navigation>
                         <Navigation section="terminated" heading="Terminated"></Navigation>
                         <Navigation section="logs" heading="Logs"></Navigation>
                         <Navigation section="docs" heading="Documentation"></Navigation>

@@ -42,6 +42,7 @@ abstract class TestCase extends BaseTestCase
     {
         return new ActiveCallDTO(
             $activeCall->id,
+            $activeCall->organisation_id,
             $activeCall->competition_id,
             $activeCall->call_id,
             $activeCall->participant_id,
@@ -49,7 +50,6 @@ abstract class TestCase extends BaseTestCase
             $activeCall->phone_number,
             $activeCall->caller_phone_number,
             $activeCall->status,
-            $activeCall->competitionPhoneLine->cost,
             $activeCall->round_start,
             $activeCall->round_end,
             $activeCall->call_end ?? now(),

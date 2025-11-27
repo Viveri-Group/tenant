@@ -13,26 +13,17 @@ import {
 export default function NavigationList() {
     const NavList = {
         main: [
-            {
-                path: route('dashboard'),
-                name: 'Dashboard',
-                icon: LayoutDashboard,
-            },
-            {
-                path: route('web.organisations.index'),
-                name: 'Organisations',
-                icon: ChessKnight,
-            },
+            // {
+            //     path: route('dashboard'),
+            //     name: 'Dashboard',
+            //     icon: LayoutDashboard,
+            // },
             {
                 path: route('web.active-calls.index'),
                 name: 'Active Calls',
                 icon: PhoneCall,
             },
-            {
-                path: route('web.phone-book-entries.index'),
-                name: 'Phone Book',
-                icon: NotebookTabs,
-            },
+
             {
                 path: route('web.competition.index'),
                 name: 'Competitions',
@@ -54,6 +45,18 @@ export default function NavigationList() {
                 path: route('web.orphan-active-calls.index'),
                 name: 'Orphaned Calls',
                 icon: PhoneOff,
+            },
+        ],
+        administration:[
+            {
+                path: route('web.organisations.index'),
+                name: 'Organisations',
+                icon: ChessKnight,
+            },
+            {
+                path: route('web.phone-book-entries.index'),
+                name: 'Phone Book',
+                icon: NotebookTabs,
             },
         ],
         logs: [

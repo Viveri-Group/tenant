@@ -71,9 +71,6 @@ const props = defineProps({
 
                             <p class="col-span-4 xl:col-span-2 text-gray-400 font-bold">Number:</p>
                             <p class="col-span-8 xl:col-span-10" v-text="formatNumber(data.phone_line.number)"></p>
-
-                            <p class="col-span-4 xl:col-span-2 text-gray-400 font-bold">Cost:</p>
-                            <p class="col-span-8 xl:col-span-10" v-text="'&pound;'+props.phoneBookEntry.cost"></p>
                         </div>
                     </div>
 

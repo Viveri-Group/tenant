@@ -39,20 +39,7 @@ class ProcessPhoneLineScheduleCommand extends Command
                         continue;
                     }
 
-                    $cost = $keyedPhoneBookEntries[$schedule->competition_phone_number]['cost'] ?? null;
 
-                    if ($cost === null) {
-                        $schedule->update([
-                            'processed' => true,
-                            'completed_at' => now(),
-                            'notes' => "Missing cost for phone number: {$schedule->competition_phone_number}",
-                            'success' => false,
-                        ]);
-
-                        continue;
-                    }
-
-                    // Safe to process now
                     DB::transaction(function () use ($schedule, $competition, $keyedPhoneBookEntries) {
                         CompetitionPhoneLine::query()
                             ->where('phone_number', $schedule->competition_phone_number)
@@ -60,7 +47,6 @@ class ProcessPhoneLineScheduleCommand extends Command
 
                         $competition->phoneLines()->create([
                             'phone_number' => $schedule->competition_phone_number,
-                            'cost' => $keyedPhoneBookEntries[$schedule->competition_phone_number]['cost'],
                         ]);
 
                         $schedule->update([

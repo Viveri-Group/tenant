@@ -14,7 +14,6 @@ class ActiveCallDTO
         public string $competition_phone_number,
         public string $caller_phone_number,
         public ?string $status,
-        public string $call_cost,
         public ?string $round_start,
         public ?string $round_end,
         public ?string $call_end,

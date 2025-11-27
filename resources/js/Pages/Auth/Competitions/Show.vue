@@ -139,9 +139,6 @@ const failDescriptions = {
                             </DateFormatter>
                         </div>
 
-                        <p class="col-span-2 xl:col-span-1 text-gray-400 font-bold">Max Paid Entries:</p>
-                        <p class="col-span-8 xl:col-span-4" v-text="props.competition.data.max_paid_entries"></p>
-
                         <p class="col-span-2 xl:col-span-1 text-gray-400 font-bold">Entries Warning:</p>
                         <p class="col-span-8 xl:col-span-4" v-text="props.competition.data.entries_warning"></p>
 
@@ -175,10 +172,6 @@ const failDescriptions = {
 
                             <p class="col-span-2 md:col-span-1 pl-4">Entries</p>
                             <p class="col-span-4 md:col-span-5" v-text="props.statistics.success.entries"></p>
-
-                            <p class="col-span-2 md:col-span-1 pl-4 text-gray-400">Paid Entries</p>
-                            <p class="col-span-4 md:col-span-5 text-gray-400"
-                               v-text="props.statistics.success.paid_entries"></p>
 
                             <p class="col-span-2 md:col-span-1 pl-4">Latest</p>
                             <p class="col-span-4 md:col-span-5" v-text="props.statistics.success.latest"></p>

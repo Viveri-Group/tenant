@@ -3,15 +3,17 @@
 namespace Tests\Feature\Web\DBHealthCheck;
 
 use App\Models\ActiveCall;
+use App\Models\Organisation;
 use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Mockery\MockInterface;
+use PDO;
 use Tests\TestCase;
 
 class DBHealthCheckTest extends TestCase
 {
-    public function test_health_check_returns_databaseup_on_successful_connection()
+    public function test_health_check_returns_database_up_on_successful_connection()
     {
         $this->login();
 
@@ -26,10 +28,8 @@ class DBHealthCheckTest extends TestCase
     {
         $this->login();
 
-        $pdoMock = $this->createMock(\PDO::class);
-        $pdoMock->method('prepare')->will($this->throwException(new \Exception()));
-
-        DB::setPdo($pdoMock);
+        DB::shouldReceive('connection->select')
+            ->andThrow(new \Exception('DB Error'));
 
         $this->get(route('web.db-health-check'))
             ->assertStatus(500)

@@ -8,33 +8,6 @@ const props = defineProps({
     competitionFiles: Object,
 })
 
-// get default audio and based on the phone line price swap out CALL_COST_WARNING & CAPPING_MESSAGE with appropriate £2.00 or £2.50 ones.
-// note - if the price is £1.50 then just use the default CALL_COST_WARNING & CAPPING_MESSAGE.
-const getDefaultAudioFiltered = (defaultAudio, cost) => {
-    const audio = { ...defaultAudio };
-
-    const overrideKeys = [
-        'CALL_COST_WARNING_2_00',
-        'CAPPING_MESSAGE_2_00',
-        'CALL_COST_WARNING_2_50',
-        'CAPPING_MESSAGE_2_50',
-    ];
-
-    if (cost === '2.00') {
-        audio.CALL_COST_WARNING = audio.CALL_COST_WARNING_2_00;
-        audio.CAPPING_MESSAGE = audio.CAPPING_MESSAGE_2_00;
-    } else if (cost === '2.50') {
-        audio.CALL_COST_WARNING = audio.CALL_COST_WARNING_2_50;
-        audio.CAPPING_MESSAGE = audio.CAPPING_MESSAGE_2_50;
-    }
-
-    overrideKeys.forEach(key => delete audio[key]);
-
-    return audio;
-};
-
-const defaultAudioFiltered = getDefaultAudioFiltered(props.defaultAudio, props.phoneLineData.attributes.cost);
-
 let competitionAudio = props.competitionFiles
     .filter((item) => item.attributes.competition_phone_line_id === null)
     .reduce((acc, item) => {
@@ -50,7 +23,7 @@ const phoneLineAudio = props.competitionFiles
     }, {});
 
 const filteredAudio = {
-    ...defaultAudioFiltered, // lowest priority
+    ...props.defaultAudio, // lowest priority
     ...competitionAudio,   // middle priority
     ...phoneLineAudio      // highest priority
 }

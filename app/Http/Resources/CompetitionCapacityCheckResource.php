@@ -19,7 +19,6 @@ class CompetitionCapacityCheckResource extends JsonResource
             'status' => $this->parameters['status'],
             'active_call_id' => $this->parameters['active_call_id'],
             'total_entry_count' => $this->parameters['entry_count']['total_entry_count'] ?? 0,
-            'paid_entry_count' => $this->parameters['entry_count']['paid_entry_count'] ?? 0,
             'entries_warning' => $this->resource?->entries_warning ?? 0,
             'max_paid_entries' => $this->resource?->max_paid_entries,
             'special_offer' => $this->resource?->special_offer ?? 'FALSE',

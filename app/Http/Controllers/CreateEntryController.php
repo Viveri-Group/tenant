@@ -24,7 +24,6 @@ class CreateEntryController extends Controller
                 $activeCall->phone_number,
                 $activeCall->caller_phone_number,
                 $activeCall->status,
-                $activeCall->call_cost,
                 $activeCall->round_start,
                 $activeCall->round_end,
                 null,
@@ -32,8 +31,7 @@ class CreateEntryController extends Controller
                 null,
                 $activeCall->created_at,
                 $activeCall->updated_at
-            ),
-            $request->filled('create_free_entry') && $request->boolean('create_free_entry')
+            )
         );
 
         return response(status: 200);

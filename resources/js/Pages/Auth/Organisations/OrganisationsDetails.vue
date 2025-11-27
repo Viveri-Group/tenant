@@ -19,7 +19,7 @@ const props = defineProps({
             </div>
 
             <div class="grid grid-cols-3 xl:grid-cols-12 gap-y-2 xl:gap-4 px-4 xl:px-2 py-4 xl:py-2"
-                 :class="{'xl:bg-gray-50' : !even}">
+                 :class="{'xl:bg-gray-50' : even}">
 
                 <div class="hidden xl:flex flex-wrap gap-2">
                     <p class="text-sm " v-text="props.organisation.id"></p>

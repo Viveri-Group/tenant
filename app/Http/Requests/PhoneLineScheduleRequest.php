@@ -2,18 +2,35 @@
 
 namespace App\Http\Requests;
 
+use App\Action\PhoneBook\PhoneBookLookupAction;
 use App\Models\PhoneLineSchedule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class PhoneLineScheduleRequest extends FormRequest
 {
+    protected function prepareForValidation()
+    {
+        if ($this->competition_phone_number) {
+
+            $entry = (new PhoneBookLookupAction())
+                ->handle($this->competition_phone_number);
+
+            $this->merge([
+                'organisation_id' => $entry?->organisation_id,
+            ]);
+        }
+    }
+
+
     public function rules(): array
     {
         $scheduleParam = $this->route('phoneLineSchedule');
         $scheduleId = $scheduleParam instanceof PhoneLineSchedule ? $scheduleParam->id : $scheduleParam;
 
         return [
+            'organisation_id' => ['required', 'exists:organisations,id'],
+
             'competition_id' => ['integer', 'required', 'exists:competitions,id'],
 
             'competition_phone_number' => [

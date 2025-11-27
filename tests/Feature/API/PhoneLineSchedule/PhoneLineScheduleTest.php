@@ -95,8 +95,8 @@ class PhoneLineScheduleTest extends TestCase
             ->assertJson(function (AssertableJson $json) {
                 return $json
                     ->has('message')
-                    ->where('data.0.source', 'competition_phone_number')
-                    ->where('data.0.message', 'The selected competition phone number is invalid.');
+                    ->where('data.0.source', 'organisation_id')
+                    ->where('data.1.source', 'competition_phone_number');
             });
     }
 
@@ -153,9 +153,10 @@ class PhoneLineScheduleTest extends TestCase
             ->assertJson(function (AssertableJson $json) {
                 return $json
                     ->has('message')
-                    ->where('data.0.source', 'competition_id')
-                    ->where('data.1.source', 'competition_phone_number')
-                    ->where('data.2.source', 'action_at');
+                    ->where('data.0.source', 'organisation_id')
+                    ->where('data.1.source', 'competition_id')
+                    ->where('data.2.source', 'competition_phone_number')
+                    ->where('data.3.source', 'action_at');
             });
     }
 

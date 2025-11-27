@@ -56,12 +56,6 @@ class CompetitionStatisticsAction
                 ->whereBetween('call_start', [$competition->start, $competition->end])
                 ->count();
 
-            $participantsPaidCount = Participant::query()
-                ->where('competition_id', $competition->id)
-                ->whereBetween('call_start', [$competition->start, $competition->end])
-                ->where('is_free_entry', '0')
-                ->count();
-
             $latestParticipant = Participant::select(['call_start'])
                 ->where('competition_id', $competition->id)
                 ->whereBetween('call_start', [$competition->start, $competition->end])
@@ -87,7 +81,6 @@ class CompetitionStatisticsAction
             return [
                 'success' => [
                     'entries' => number_format($participantsCount),
-                    'paid_entries' => number_format($participantsPaidCount),
                     'latest' => $latestParticipant?->call_start->setTimezone('Europe/London')->format('jS F Y - g:i:sa') ?? 'N/A',
                 ],
                 'fail' => [

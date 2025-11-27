@@ -19,13 +19,11 @@ class PhoneLineController extends Controller
 
         abort_if(!$phoneBookEntry, 404, "Phone number {$phoneNumber} not found in phone book.");
 
-//        dd($competition->organisation_id ,$phoneBookEntry->organisation_id );
         abort_if($competition->organisation_id <> $phoneBookEntry->organisation_id, 409, 'Competition and phone line - organisation mismatch.');
 
         $newPhoneLine = $competition->phoneLines()->create([
             'organisation_id' => $competition->organisation_id,
             'phone_number' => $request->input('phone_number'),
-            'cost' => $phoneBookEntry->cost
         ]);
 
         return new PhoneLineResource($newPhoneLine);

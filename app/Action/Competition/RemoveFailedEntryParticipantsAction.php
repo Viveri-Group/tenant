@@ -22,7 +22,6 @@ class RemoveFailedEntryParticipantsAction
 
         $roundCount?->update([
             'total_entry_count' => max(0, (int)$roundCount->total_entry_count - $participantTotalCount),
-            'paid_entry_count' => max(0, (int)$roundCount->paid_entry_count - $paidCount),
         ]);
     }
 }

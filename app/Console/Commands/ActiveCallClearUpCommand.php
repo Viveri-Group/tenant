@@ -17,6 +17,7 @@ class ActiveCallClearUpCommand extends Command
         ActiveCall::where('created_at', '<=', now()->subMinutes(2))
             ->each(function (ActiveCall $call) {
                 ActiveCallOrphan::create([
+                    'organisation_id' => $call->organisation_id,
                     'competition_id' => $call->competition_id,
                     'call_id' => $call->call_id,
                     'phone_number' => $call->phone_number,

@@ -66,11 +66,6 @@ const competitionNameColor = () => {
                     <CompetitionTimeDetails :competition="props.competition"></CompetitionTimeDetails>
                 </div>
 
-                <div class="block xl:hidden font-bold text-gray-400"># Entries:</div>
-                <div class="col-span-2 xl:col-span-1 md:text-center">
-                    {{ props.competition.max_paid_entries}}
-                </div>
-
                 <div class="block xl:hidden font-bold text-gray-400">Special Offer:</div>
                 <div class="col-span-2 xl:col-span-2 md:text-center">
                     {{ props.competition.special_offer ?? '-'}}

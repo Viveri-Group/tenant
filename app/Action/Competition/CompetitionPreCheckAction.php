@@ -81,7 +81,6 @@ class CompetitionPreCheckAction
                 'phone_number' => $requestDetails->competitionPhoneNumber,
                 'caller_phone_number' => $callerNumber,
                 'cli_presentation' => $requestDetails->cliPresentation,
-                'call_cost' => $phoneLine->cost,
                 'status' => CompetitionStatusEnum::OPEN_PRE_ANSWER->value,
             ]);
         }

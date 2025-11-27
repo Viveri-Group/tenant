@@ -23,7 +23,6 @@ class CompetitionCapacityCheckWithActivePhoneLineResource extends JsonResource
             'status' => $this->parameters['status'],
             'active_call_id' => $this->parameters['active_call_id'],
             'total_entry_count' => $this->parameters['entry_count']['total_entry_count'] ?? 0,
-            'paid_entry_count' => $this->parameters['entry_count']['paid_entry_count'] ?? 0,
             'entries_warning' => $this->resource?->competition?->entries_warning ?? 0,
             'max_paid_entries' => $this->resource?->competition?->max_paid_entries,
             'special_offer' => $this->resource?->competition?->special_offer ?? 'FALSE',
