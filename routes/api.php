@@ -11,6 +11,7 @@ use App\Http\Controllers\DeansTestController;
 use App\Http\Controllers\AudioFileUploadController;
 use App\Http\Controllers\CreateEntryController;
 use App\Http\Controllers\EntrantsDownloadController;
+use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\PhoneBookEntryController;
 use App\Http\Controllers\PhoneBookLookupEntryController;
 use App\Http\Controllers\PhoneLineAvailabilityController;
@@ -32,6 +33,8 @@ Route::middleware('auth:sanctum')->scopeBindings()->group(function () {
     Route::get('/phone-book/entry/{phoneBookEntry}', [PhoneBookEntryController::class, 'show'])->name('phone-book.entry.show');
 
     Route::get('/phone-book/lookup/entry/{phoneBookEntry:phone_number}', PhoneBookLookupEntryController::class)->name('phone-book.lookup.entry');
+
+    Route::get('/organisation', [OrganisationController::class, 'index'])->name('organisation.index');
 
     Route::get('/competition', [CompetitionController::class, 'index'])->name('competition.index');
     Route::get('/competition/{competition}', [CompetitionController::class, 'show'])->name('competition.show');
