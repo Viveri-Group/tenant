@@ -16,12 +16,12 @@ class AudioFileExistsCheckActionTest extends TestCase
 
         FileUpload::factory()->create([
             'competition_id' => $competition->id,
-            'type' => CompetitionAudioType::PRE_EVENT->name
+            'type' => CompetitionAudioType::INTRO->name
         ]);
 
         $data = [
             'audio_type' => 'competition',
-            'type' => CompetitionAudioType::PRE_EVENT->name
+            'type' => CompetitionAudioType::INTRO->name
         ];
 
         $this->assertTrue((new AudioFileExistsCheckAction())->handle($data, $competition));
@@ -34,13 +34,13 @@ class AudioFileExistsCheckActionTest extends TestCase
 
         FileUpload::factory()->create([
             'competition_phone_line_id' => $phoneLineId,
-            'type' => CompetitionAudioType::PRE_EVENT->name
+            'type' => CompetitionAudioType::INTRO->name
         ]);
 
         $data = [
             'audio_type' => 'competition_phone_line',
             'competition_phone_line_id' => $phoneLineId,
-            'type' => CompetitionAudioType::PRE_EVENT->name
+            'type' => CompetitionAudioType::INTRO->name
         ];
 
         $this->assertTrue((new AudioFileExistsCheckAction())->handle($data, $competition));

@@ -46,7 +46,7 @@ class FileUploadTest extends TestCase
 
         $this->post(route('file.store', $this->competition), [
             'file' => $file,
-            'type' => CompetitionAudioType::PRE_EVENT->name,
+            'type' => CompetitionAudioType::DTMF_MENU->name,
             'name' => 'My New Audio File',
             'audio_type' => 'competition'
         ])->assertCreated();
@@ -88,13 +88,13 @@ class FileUploadTest extends TestCase
         $file = UploadedFile::fake()->createWithContent('foo.wav', 'test content');
 
         FileUpload::factory()->create([
-            'type' => CompetitionAudioType::PRE_EVENT->name,
+            'type' => CompetitionAudioType::DTMF_MENU->name,
             'competition_id' => $this->competition->id,
         ]);
 
         $this->post(route('file.store', $this->competition), [
             'file' => $file,
-            'type' => CompetitionAudioType::PRE_EVENT->name,
+            'type' => CompetitionAudioType::DTMF_MENU->name,
             'name' => 'My New Audio File',
             'audio_type' => 'competition'
         ])->assertForbidden();
@@ -118,7 +118,7 @@ class FileUploadTest extends TestCase
 
         $this->post(route('file.store', $this->competition), [
             'file' => $file,
-            'type' => CompetitionAudioType::PRE_EVENT->name,
+            'type' => CompetitionAudioType::DTMF_MENU->name,
             'name' => 'My New Audio File',
             'audio_type' => 'competition_phone_line',
             'competition_phone_line_id' => $phoneLine->id
@@ -157,13 +157,13 @@ class FileUploadTest extends TestCase
         $file = UploadedFile::fake()->create('foo.wav', 1000, 'audio/wav');
 
         FileUpload::factory()->create([
-            'type' => CompetitionAudioType::PRE_EVENT->name,
+            'type' => CompetitionAudioType::DTMF_MENU->name,
             'competition_phone_line_id' => $phoneLine->id,
         ]);
 
         $this->post(route('file.store', $this->competition), [
             'file' => $file,
-            'type' => CompetitionAudioType::PRE_EVENT->name,
+            'type' => CompetitionAudioType::DTMF_MENU->name,
             'name' => 'My New Audio File',
             'audio_type' => 'competition_phone_line',
             'competition_phone_line_id' => $phoneLine->id
@@ -237,7 +237,7 @@ class FileUploadTest extends TestCase
 
         $this->post(route('file.store', $this->competition), [
             'file' => $file,
-            'type' => CompetitionAudioType::PRE_EVENT->name
+            'type' => CompetitionAudioType::DTMF_MENU->name
         ])
             ->assertJson(function (AssertableJson $json) {
                 return $json
@@ -270,7 +270,7 @@ class FileUploadTest extends TestCase
 
         $this->post(route('file.store', $this->competition), [
             'file' => $file,
-            'type' => CompetitionAudioType::PRE_EVENT->name,
+            'type' => CompetitionAudioType::DTMF_MENU->name,
             'name' => 'My New Audio File',
             'audio_type' => 'competition_phone_line',
         ])

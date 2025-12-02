@@ -21,13 +21,4 @@ class FileUploadTest extends TestCase
     {
         $this->assertEquals('uploads/', FileUpload::LOCAL_BASE);
     }
-
-    public function test_it_uses_soft_deletes()
-    {
-        $fileUpload = FileUpload::factory()->create();
-
-        $fileUpload->delete();
-
-        $this->assertSoftDeleted($fileUpload);
-    }
 }

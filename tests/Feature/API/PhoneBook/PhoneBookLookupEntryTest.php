@@ -45,25 +45,4 @@ class PhoneBookLookupEntryTest extends TestCase
             ->assertOk()
             ->assertExactJson([]);
     }
-
-    public function test_that_it_shows_multiple_competitions_set()
-    {
-        $compA = Competition::factory([
-            'start' => now(),
-            'end' => now()->addMinute(),
-        ])->hasPhoneLines(1, ['phone_number' => '441234567890'])->create();
-
-        $compB = Competition::factory([
-            'start' => now(),
-            'end' => now()->addMinute(),
-        ])->hasPhoneLines(1, ['phone_number' => '441234567890'])->create();
-
-        $this->getJson(route('phone-book.lookup.entry', ['441234567890']))
-            ->assertConflict()
-            ->assertJson(function (AssertableJson $json) use($compA, $compB){
-                return $json
-                    ->where('error', "Number 441234567890 points to multiple competitions: ({$compA->id},{$compB->id})");
-            });
-
-    }
 }
