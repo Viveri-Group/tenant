@@ -2,17 +2,13 @@
 
 namespace Tests\Feature\API\CapacityCheck;
 
-use App\Action\Organisation\GetOrganisationAction;
 use App\Jobs\UpdateActiveCallJob;
 use App\Models\ActiveCall;
 use App\Models\Competition;
 use App\Models\EntrantRoundCount;
 use App\Models\Organisation;
 use App\Models\PhoneBookEntry;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
@@ -298,7 +294,7 @@ class CapacityCheckTest extends TestCase
     public function test_participant_has_entered_too_many_times_via_entrant_round_count()
     {
         EntrantRoundCount::factory([
-            'hash' => hash('xxh128', "2025-02-04 09:00:00 {$this->competition->id} 441604556778"),
+            'hash' => hash('xxh128', "{$this->competition->start} {$this->competition->id} 441604556778"),
             'total_entry_count' => 50,
         ])->create();
 

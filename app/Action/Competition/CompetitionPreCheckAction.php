@@ -90,7 +90,6 @@ class CompetitionPreCheckAction
                 }
 
                 $activeCall->update([
-
                     ...$data
                 ]);
             }
