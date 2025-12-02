@@ -67,7 +67,7 @@ class CapacityCheckController extends Controller
     {
         $organisation = (new GetOrganisationAction())->handle($phoneLine->organisation_id);
 
-        if(!$organisation->max_number_of_lines || $organisation->max_number_of_lines < 0) {
+        if(!$organisation['max_number_of_lines'] || $organisation['max_number_of_lines'] < 0) {
             return false;
         }
 
@@ -78,7 +78,7 @@ class CapacityCheckController extends Controller
         if ($linesHaveBeenExceeded) {
             MaxCapacityCallLog::create([
                 'call_id' => $request->input('call_id'),
-                'allowed_capacity' => $organisation->max_number_of_lines
+                'allowed_capacity' => $organisation['max_number_of_lines']
             ]);
         }
 

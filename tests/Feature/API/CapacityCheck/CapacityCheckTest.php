@@ -6,6 +6,7 @@ use App\Jobs\UpdateActiveCallJob;
 use App\Models\ActiveCall;
 use App\Models\Competition;
 use App\Models\EntrantRoundCount;
+use App\Models\Organisation;
 use App\Models\PhoneBookEntry;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
@@ -325,13 +326,15 @@ class CapacityCheckTest extends TestCase
 
         $this->login();
 
-        $competition = Competition::factory(['start' => now()->subDay(), 'end' => now()->addDay(), 'max_entries' => 2])
-            ->hasPhoneLines(['phone_number' => '0333456555'])
+        $organisation = Organisation::factory()->create();
+
+        $competition = Competition::factory(['start' => now()->subDay(), 'end' => now()->addDay(), 'max_entries' => 2, 'organisation_id' => $organisation->id])
+            ->hasPhoneLines(['phone_number' => '0333456555', 'organisation_id' => $organisation->id])
             ->create();
 
         $competition->organisation()->update(['max_number_of_lines' => 1]);
 
-        ActiveCall::factory(['organisation_id' => $competition->organisation_id])->create();
+        ActiveCall::factory(['organisation_id' => $organisation->id])->create();
 
         DB::enableQueryLog();
 
