@@ -26,7 +26,7 @@ Parameters:
 
   CertificateArn:
     Type: String
-    Default: arn:aws:acm:eu-west-2:756455520547:certificate/00affa3a-ae3c-41db-ad5a-774b251caf39
+    Default: arn:aws:acm:eu-west-2:756455520547:certificate/edd361d1-f35c-4a72-afdc-4c0866157d17
     Description: ARN of the SSL certificate for multi-tenant.viveri-tech.com
 
   HostedZoneId:
@@ -885,7 +885,7 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref HostedZoneId
-      Name: multi-tenant-test.viveri-tech.com
+      Name: multi-tenant.viveri-tech.com
       Type: CNAME
       TTL: 300
       ResourceRecords:
