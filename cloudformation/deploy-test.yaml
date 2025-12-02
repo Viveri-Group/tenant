@@ -52,6 +52,8 @@ Resources:
       Encrypted: true
       PerformanceMode: generalPurpose
       ThroughputMode: bursting
+      BackupPolicy:
+        Status: ENABLED
       FileSystemTags:
         - Key: Name
           Value: !Sub 'multi-tenant-mysql-efs-${Environment}'
