@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('active_call_orphans', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('organisation_id')->constrained('organisations');
             $table->foreignId('competition_id')->nullable()->constrained('competitions');
             $table->string('call_id')->nullable();
             $table->string('phone_number', 12);

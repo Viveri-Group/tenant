@@ -10,6 +10,7 @@ return new class extends Migration {
         Schema::create('failed_entries', function (Blueprint $table) {
             $table->id();
             $table->uuid()->nullable()->unique();
+            $table->foreignId('organisation_id')->constrained('organisations');
             $table->unsignedBigInteger('competition_id')->nullable();
             $table->string('station_name')->nullable();
             $table->string('call_id')->nullable();

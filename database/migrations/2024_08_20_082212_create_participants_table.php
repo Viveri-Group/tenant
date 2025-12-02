@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('participants', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('organisation_id')->constrained('organisations');
             $table->uuid()->nullable()->unique();
             $table->string('call_id')->nullable()->comment('unique call id provided by the shout system');
             $table->foreignId('competition_id')->constrained('competitions');
