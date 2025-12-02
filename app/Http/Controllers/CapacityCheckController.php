@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Action\CapacityCheck\MaxLinesExceeded;
 use App\Action\Competition\CapacityCheckExceptionHandlerAction;
 use App\Action\Competition\CompetitionPreCheckAction;
+use App\Action\Organisation\GetOrganisationAction;
 use App\Action\PhoneLine\PhoneNumberCleanupAction;
 use App\DTO\Competition\CompetitionPreCheckRequestDTO;
 use App\Enums\ResponseStatus;
@@ -41,7 +42,7 @@ class CapacityCheckController extends Controller
             }
         );
 
-        abort_if($phoneLine?->competition && $this->maxNumberOfLinesExceeded($request, $phoneLine->competition), 412, 'Active lines allowance exceeded.');
+        abort_if($phoneLine?->competition && $this->maxNumberOfLinesExceeded($request, $phoneLine), 412, 'Active lines allowance exceeded.');
 
         try {
             $response = (new CompetitionPreCheckAction())->handle(
@@ -62,16 +63,22 @@ class CapacityCheckController extends Controller
         return response()->json($response, $this->httpResponseCode);
     }
 
-    protected function maxNumberOfLinesExceeded(Request $request, Competition $competition): bool
+    protected function maxNumberOfLinesExceeded(Request $request, CompetitionPhoneLine $phoneLine): bool
     {
-        $orgLinesInUse = ActiveCall::where('organisation_id', $competition->organisation_id)->count();
+        $organisation = (new GetOrganisationAction())->handle($phoneLine->organisation_id);
 
-        $linesHaveBeenExceeded = (new MaxLinesExceeded())->handle($competition->organisation_id, $orgLinesInUse);
+        if(!$organisation->max_number_of_lines || $organisation->max_number_of_lines < 0) {
+            return false;
+        }
+
+        $orgLinesInUse = ActiveCall::where('organisation_id', $phoneLine->organisation_id)->count();
+
+        $linesHaveBeenExceeded = (new MaxLinesExceeded())->handle($phoneLine->organisation_id, $orgLinesInUse);
 
         if ($linesHaveBeenExceeded) {
             MaxCapacityCallLog::create([
                 'call_id' => $request->input('call_id'),
-                'allowed_capacity' => config('system.MAX_NUMBER_OF_LINES')
+                'allowed_capacity' => $organisation->max_number_of_lines
             ]);
         }
 

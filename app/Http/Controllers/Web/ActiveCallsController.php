@@ -44,8 +44,8 @@ class ActiveCallsController extends Controller
                     ],
                     'phone_book' => collect(PhoneBookEntry::all())->map(fn($phoneBook) => ['label' => $phoneBook->phone_number, 'value' => $phoneBook->phone_number])->toArray()
                 ],
-                'enableMaxLines' => config('system.ENABLE_MAX_LINES'),
-                'maxActiveLines' => config('system.MAX_NUMBER_OF_LINES'),
+                'enableMaxLines' => false,
+                'maxActiveLines' => 0,
             ]);
     }
 

@@ -10,23 +10,17 @@ use App\Http\Controllers\CompetitionStatisticsRangeController;
 use App\Http\Controllers\CompetitionStatisticsRoundController;
 use App\Http\Controllers\DeansTestController;
 use App\Http\Controllers\AudioFileUploadController;
-use App\Http\Controllers\CreateEntryController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\PhoneBookEntryController;
 use App\Http\Controllers\PhoneBookEntryOrganisationController;
 use App\Http\Controllers\PhoneBookLookupEntryController;
 use App\Http\Controllers\PhoneLineAvailabilityController;
 use App\Http\Controllers\PhoneLineController;
-use App\Http\Controllers\CompetitionCheckController;
 use App\Http\Controllers\PhoneLineSchedulerController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->scopeBindings()->group(function () {
     Route::get('/health-check', APIHealthCheckController::class)->name('api.health-check');
-
-//    Route::post('/active-call/competition-check', CompetitionCheckController::class)->name('active-call.competition-check');
-//    Route::post('/active-call/{activeCall}/create-entry', CreateEntryController::class)->name('active-call.create-entry');
-//    Route::post('/active-call/{activeCall}/clear-down', ActiveCallClearDownController::class)->name('active-call.clear-down');
 
     Route::post('/active-call/capacity-check', CapacityCheckController::class)->name('active-call.capacity-check');
     Route::post('/active-call/{activeCall}/clear-down', ActiveCallClearDownController::class)->name('active-call.clear-down');
