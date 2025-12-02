@@ -220,7 +220,7 @@ Resources:
             - Name: MYSQL_DATABASE
               ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_DATABASE::'
             - Name: MYSQL_USER
-              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_USERNAME::'
+              ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:MYSQL_USER::'
             - Name: MYSQL_PASSWORD
               ValueFrom: 'arn:aws:secretsmanager:eu-west-2:756455520547:secret:viveri/telephone-api-multi-tenant-rhGYDP:DB_PASSWORD::'
           MountPoints:
