@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('competitions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('organisation_id')->constrained('organisations');
             $table->string('name');
             $table->string('template')->default('DEFAULT');
             $table->dateTime('start')->comment('start datetime of the competition');

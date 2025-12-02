@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('competition_phone_lines', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('organisation_id')->constrained('organisations');
             $table->foreignId('competition_id')->constrained('competitions');
             $table->string('phone_number',12)->unique();
             $table->timestamps();

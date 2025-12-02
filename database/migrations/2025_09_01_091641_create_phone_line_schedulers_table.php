@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::create('phone_line_schedules', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('organisation_id')->constrained('organisations');
             $table->string('author_id')->nullable()->comment('External ID of who created the schedule.');
             $table->string('competition_phone_number', 12)->comment('The competition phone number which will be moved.');
             $table->unsignedBigInteger('competition_id')->comment('The id of the NEW competition id.');
