@@ -8,7 +8,6 @@ use App\DTO\Competition\CompetitionPreCheckRequestDTO;
 use App\Enums\ResponseStatus;
 use App\Exceptions\CallerExceededMaxEntriesHTTPException;
 use App\Exceptions\CompetitionClosedHTTPException;
-use App\Exceptions\NoActiveCompetitionButCompetitionNumberKnownHTTPException;
 use App\Exceptions\NoActiveCompetitionsHTTPException;
 use App\Exceptions\PhoneBookEntryMissingHTTPException;
 use App\Http\Resources\CompetitionCapacityCheckResource;
@@ -63,8 +62,9 @@ class CompetitionPreCheckAction
 
         if ($recordActiveCall) {
             $activeCall = ActiveCall::create([
-                'competition_phone_line_id' => $phoneLine->id,
                 'competition_id' => $phoneLine->competition_id,
+                'organisation_id' => $phoneLine->organisation_id,
+                'competition_phone_line_id' => $phoneLine->id,
                 'call_id' => $requestDetails->callID,
                 'phone_number' => $requestDetails->competitionPhoneNumber,
                 'caller_phone_number' => $callerNumber,
