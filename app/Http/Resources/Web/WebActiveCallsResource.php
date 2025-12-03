@@ -13,8 +13,8 @@ class WebActiveCallsResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'organisation_id' => $this->organisation->id,
-            'organisation_name' => $this->organisation->name,
+            'organisation_id' => $this->organisation?->id,
+            'organisation_name' => $this->organisation?->name,
             'competition_id' => $this->competition_id,
             'call_id' => $this->call_id,
             'phone_number' => $this->phone_number,
