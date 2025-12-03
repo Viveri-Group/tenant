@@ -8,8 +8,13 @@ use Throwable;
 
 class CustomCompetitionHttpException extends HttpException
 {
-    public function __construct( int $statusCode, string $message, protected array $parameters = [], Throwable $previous = null, int $code = 0) {
-        parent::__construct($statusCode, $message, $previous, [], $code);
+    public function __construct(
+        int $statusCode,
+        string $message,
+        protected array $parameters = [],
+        Throwable $previous = null
+    ) {
+        parent::__construct($statusCode, $message, $previous, [], $statusCode);
     }
 
     public function getParameters(): array

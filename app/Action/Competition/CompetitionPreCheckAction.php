@@ -127,7 +127,7 @@ class CompetitionPreCheckAction
             !$phoneLine->competition->isOpen,
             new CompetitionClosedHTTPException(
                 200,
-                'Competition is closed',
+                'Competition is closed.',
                 [
                     'competition' => $phoneLine->competition,
                     'active_phone_line' => $phoneLine,
