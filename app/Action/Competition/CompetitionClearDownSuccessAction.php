@@ -41,6 +41,8 @@ class CompetitionClearDownSuccessAction
             ]
         );
 
+        //review as we may not want to do this this way
+
 //        if($smsOfferAccepted){
 //            SMSOfferAcceptedJob::dispatch(
 //                $activeCallDTO->competition_id,
@@ -48,7 +50,7 @@ class CompetitionClearDownSuccessAction
 //            );
 //        }
 
-        $entrantRoundCount->refresh();
+//        $entrantRoundCount->refresh();
 
 //        if($entrantRoundCount->entry_count === 1){
 //            $participant->update([ 'sms_first_entry_sent' => true ]);
