@@ -24,42 +24,46 @@ class CompetitionPreCheckActionTest extends TestCase
     {
         parent::setUp();
 
-        $this->setFileDefaults();
+//        $this->setFileDefaults();
 
         $this->login();
 
-        $this->organisation = Organisation::factory()->create();
+//        $this->setCompetition();
 
-        $this->competitionNumber = '0333456555';
+//        $this->organisation = Organisation::factory()->create();
 
-        PhoneBookEntry::factory(['phone_number' => $this->competitionNumber, 'organisation_id' => $this->organisation->id])->create();
+//        $this->competitionNumber = '0333456555';
 
-        $this->competition = Competition::factory(['start' => now()->subDays(2), 'end' => now()->addDay(), 'max_entries' => 4, 'organisation_id' => $this->organisation->id])
-            ->hasPhoneLines(['phone_number' => $this->competitionNumber, 'organisation_id' => $this->organisation->id])
-            ->create();
+//        PhoneBookEntry::factory(['phone_number' => $this->competitionNumber, 'organisation_id' => $this->organisation->id])->create();
 
-        $this->phoneline = CompetitionPhoneLine::first();
-        $this->callerNumber = '441604464237';
+//        $this->competition = Competition::factory(['start' => now()->subDays(2), 'end' => now()->addDay(), 'max_entries' => 4, 'organisation_id' => $this->organisation->id])
+//            ->hasPhoneLines(['phone_number' => $this->competitionNumber, 'organisation_id' => $this->organisation->id])
+//            ->create();
+//
+//        $this->phoneline = CompetitionPhoneLine::first();
+//        $this->callerNumber = '441604464237';
     }
 
     public function test_success()
     {
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
         EntrantRoundCount::create(
             [
-                'hash' => hash('xxh128', "{$this->competition->start} {$this->competition->id} 441604464237"),
-                'competition_id' => $this->competition->id,
-                'caller_number' => $this->callerNumber,
+                'hash' => hash('xxh128', "{$competition->start} {$competition->id} 441604464237"),
+                'competition_id' => $competition->id,
+                'caller_number' => $callerNumber,
                 'total_entry_count' => 2,
             ]
         );
 
         $response = (new CompetitionPreCheckAction())->handle(
             new CompetitionPreCheckRequestDTO(
-                $this->callerNumber,
-                $this->competitionNumber,
+                $callerNumber,
+                $competitionNumber,
                 1234
             ),
-            $this->phoneline,
+            $phoneLine,
             CompetitionCapacityCheckWithActivePhoneLineResource::class,
             true
         );
@@ -68,11 +72,11 @@ class CompetitionPreCheckActionTest extends TestCase
 
         $activeCall = $activeCalls->first();
 
-        tap($activeCall, function (ActiveCall $activeCall) {
-            $this->assertSame($this->competition->id, $activeCall->competition_id);
-            $this->assertSame($this->organisation->id, $activeCall->organisation_id);
-            $this->assertSame($this->competitionNumber, $activeCall->phone_number);
-            $this->assertSame($this->callerNumber, $activeCall->caller_phone_number);
+        tap($activeCall, function (ActiveCall $activeCall) use ($competition, $organisation, $competitionNumber, $callerNumber) {
+            $this->assertSame($competition->id, $activeCall->competition_id);
+            $this->assertSame($organisation->id, $activeCall->organisation_id);
+            $this->assertSame($competitionNumber, $activeCall->phone_number);
+            $this->assertSame($callerNumber, $activeCall->caller_phone_number);
             $this->assertSame(1234, $activeCall->call_id);
             $this->assertNotNull($activeCall->round_start);
             $this->assertNotNull($activeCall->round_end);
@@ -80,7 +84,7 @@ class CompetitionPreCheckActionTest extends TestCase
 
         $this->assertTrue($response instanceof CompetitionCapacityCheckWithActivePhoneLineResource);
 
-        tap($response, function (CompetitionCapacityCheckWithActivePhoneLineResource $resource) use($activeCall){
+        tap($response, function (CompetitionCapacityCheckWithActivePhoneLineResource $resource) use ($activeCall) {
             $this->assertSame('OPEN', $resource->parameters['status']);
             $this->assertSame($activeCall->id, $resource->parameters['active_call_id']);
             $this->assertSame(false, $resource->parameters['sms_offer_enabled']);
@@ -90,14 +94,16 @@ class CompetitionPreCheckActionTest extends TestCase
 
     public function test_407_is_returned()
     {
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
         try {
             (new CompetitionPreCheckAction())->handle(
                 new CompetitionPreCheckRequestDTO(
-                    $this->callerNumber,
+                    $callerNumber,
                     '441111111111',
                     1234
                 ),
-                $this->phoneline,
+                $phoneLine,
                 CompetitionCapacityCheckWithActivePhoneLineResource::class
             );
 
@@ -110,11 +116,13 @@ class CompetitionPreCheckActionTest extends TestCase
 
     public function test_400_is_returned()
     {
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
         try {
             (new CompetitionPreCheckAction())->handle(
                 new CompetitionPreCheckRequestDTO(
-                    $this->callerNumber,
-                    $this->competitionNumber,
+                    $callerNumber,
+                    $competitionNumber,
                     1234
                 ),
                 null,
@@ -130,11 +138,13 @@ class CompetitionPreCheckActionTest extends TestCase
 
     public function test_caller_exceeds_max_calls_406_is_returned()
     {
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
         EntrantRoundCount::create(
             [
-                'hash' => hash('xxh128', "{$this->competition->start} {$this->competition->id} 441604464237"),
-                'competition_id' => $this->competition->id,
-                'caller_number' => $this->callerNumber,
+                'hash' => hash('xxh128', "{$competition->start} {$competition->id} 441604464237"),
+                'competition_id' => $competition->id,
+                'caller_number' => $callerNumber,
                 'total_entry_count' => 5,
             ]
         );
@@ -142,22 +152,22 @@ class CompetitionPreCheckActionTest extends TestCase
         try {
             (new CompetitionPreCheckAction())->handle(
                 new CompetitionPreCheckRequestDTO(
-                    $this->callerNumber,
-                    $this->competitionNumber,
+                    $callerNumber,
+                    $competitionNumber,
                     1234
                 ),
-                $this->phoneline,
+                $phoneLine,
                 CompetitionCapacityCheckWithActivePhoneLineResource::class,
                 true
             );
 
             $this->assertCount(1, $activeCalls = ActiveCall::all());
 
-            tap($activeCalls->first(), function (ActiveCall $activeCall) {
-                $this->assertSame($this->competition->id, $activeCall->competition_id);
-                $this->assertSame($this->organisation->id, $activeCall->organisation_id);
-                $this->assertSame($this->competitionNumber, $activeCall->phone_number);
-                $this->assertSame($this->callerNumber, $activeCall->caller_phone_number);
+            tap($activeCalls->first(), function (ActiveCall $activeCall) use($competition,$organisation,$competitionNumber,$callerNumber){
+                $this->assertSame($competition->id, $activeCall->competition_id);
+                $this->assertSame($organisation->id, $activeCall->organisation_id);
+                $this->assertSame($competitionNumber, $activeCall->phone_number);
+                $this->assertSame($callerNumber, $activeCall->caller_phone_number);
                 $this->assertSame(1234, $activeCall->call_id);
                 $this->assertNotNull($activeCall->round_start);
                 $this->assertNotNull($activeCall->round_end);
@@ -171,16 +181,18 @@ class CompetitionPreCheckActionTest extends TestCase
 
     public function test_competition_is_closed_returns_200()
     {
-        $this->competition->update(['end' => now()->subDay()]);
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
+        $competition->update(['end' => now()->subDay()]);
 
         try {
             (new CompetitionPreCheckAction())->handle(
                 new CompetitionPreCheckRequestDTO(
-                    $this->callerNumber,
-                    $this->competitionNumber,
+                    $callerNumber,
+                    $competitionNumber,
                     1234
                 ),
-                $this->phoneline,
+                $phoneLine,
                 CompetitionCapacityCheckWithActivePhoneLineResource::class
             );
 

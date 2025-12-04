@@ -21,37 +21,25 @@ class CapacityCheckTest extends TestCase
 
         Bus::fake();
 
-        $this->setFileDefaults();
-
         $this->login();
-
-        DB::enableQueryLog();
-
-        $this->organisation = Organisation::factory()->create();
-
-        $this->competitionNumber = '0333456555';
-
-        PhoneBookEntry::factory(['phone_number' => $this->competitionNumber , 'organisation_id' => $this->organisation->id])->create();
-
-        $this->competition = Competition::factory(['start' => now()->subDay(), 'end' => now()->addDay(), 'max_entries' => 2, 'organisation_id' => $this->organisation->id])
-            ->hasPhoneLines(['phone_number' => $this->competitionNumber, 'organisation_id' => $this->organisation->id])
-            ->create();
     }
 
     public function test_capacity_check_passes()
     {
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
         $this->post(route('active-call.capacity-check'), [
             'call_id' => 53,
-            'phone_number' => $this->competitionNumber,
+            'phone_number' => $competitionNumber,
             'caller_phone_number' => '441604556778',
         ])
             ->assertOk()
-            ->assertJson(function (AssertableJson $json) {
+            ->assertJson(function (AssertableJson $json) use($competition){
                 return $json
-                    ->where('competition_id', $this->competition->id)
+                    ->where('competition_id', $competition->id)
                     ->where('status', 'OPEN')
                     ->where('total_entry_count', 0)
-                    ->where('max_entries', 2)
+                    ->where('max_entries', 4)
                     ->where('special_offer', 'FALSE')
                     ->where('sms_offer_enabled', false)
                     ->where('INTRO', 1)
@@ -69,21 +57,21 @@ class CapacityCheckTest extends TestCase
 
         $activeCall = $activeCalls->first();
 
-        tap($activeCall, function (ActiveCall $activeCall) {
+        tap($activeCall, function (ActiveCall $activeCall) use($competitionNumber){
             $this->assertEquals(53, $activeCall->call_id);
-            $this->assertSame($this->competitionNumber, $activeCall->phone_number);
+            $this->assertSame($competitionNumber, $activeCall->phone_number);
             $this->assertSame('441604556778', $activeCall->caller_phone_number);
             $this->assertNotNull($activeCall->competition_id);
             $this->assertNull($activeCall->status);
         });
 
-        Bus::assertDispatched(UpdateActiveCallJob::class, function ($job) use ($activeCall) {
+        Bus::assertDispatched(UpdateActiveCallJob::class, function ($job) use ($activeCall, $competition) {
             return $job->data === [
-                    'competition_id' => $this->competition->id,
+                    'competition_id' => $competition->id,
                     'status' => 'OPEN',
                     'active_call_id' => $activeCall->id,
                     'total_entry_count' => 0,
-                    'max_entries' => 2,
+                    'max_entries' => 4,
                     'special_offer' => 'FALSE',
                     'sms_offer_enabled' => false,
                     'INTRO' => 1,
@@ -125,11 +113,13 @@ class CapacityCheckTest extends TestCase
 
     public function test_no_competition()
     {
-        $this->competition->phoneLines()->delete();
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
+        $competition->phoneLines()->delete();
 
         $this->post(route('active-call.capacity-check'), [
             'call_id' => 53,
-            'phone_number' => $this->competitionNumber,
+            'phone_number' => $competitionNumber,
             'caller_phone_number' => '441604556778',
         ])
             ->assertBadRequest()
@@ -147,23 +137,25 @@ class CapacityCheckTest extends TestCase
 
     public function test_competition_is_closed()
     {
-        $this->competition->update([
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
+        $competition->update([
             'start' => '2024-01-01 10:00:00',
             'end' => '2024-01-31 00:00:00',
         ]);
 
         $this->post(route('active-call.capacity-check'), [
             'call_id' => 53,
-            'phone_number' => $this->competitionNumber,
+            'phone_number' => $competitionNumber,
             'caller_phone_number' => '441604556778',
         ])
             ->assertOk()
-            ->assertJson(function (AssertableJson $json) {
+            ->assertJson(function (AssertableJson $json) use($competition){
                 return $json
-                    ->where('competition_id', $this->competition->id)
+                    ->where('competition_id', $competition->id)
                     ->where('status', 'CLOSED')
                     ->where('total_entry_count', 0)
-                    ->where('max_entries', 2)
+                    ->where('max_entries', 4)
                     ->where('special_offer', 'FALSE')
                     ->where('sms_offer_enabled', 'FALSE')
                     ->where('INTRO', 1)
@@ -181,21 +173,21 @@ class CapacityCheckTest extends TestCase
 
         $activeCall = $activeCalls->first();
 
-        tap($activeCall, function (ActiveCall $activeCall) {
+        tap($activeCall, function (ActiveCall $activeCall) use($competitionNumber) {
             $this->assertEquals(53, $activeCall->call_id);
-            $this->assertSame($this->competitionNumber, $activeCall->phone_number);
+            $this->assertSame($competitionNumber, $activeCall->phone_number);
             $this->assertSame('441604556778', $activeCall->caller_phone_number);
             $this->assertNotNull($activeCall->competition_id);
             $this->assertNull($activeCall->status);
         });
 
-        Bus::assertDispatched(UpdateActiveCallJob::class, function ($job) use ($activeCall) {
+        Bus::assertDispatched(UpdateActiveCallJob::class, function ($job) use ($activeCall, $competition) {
             return $job->data === [
-                    'competition_id' => $this->competition->id,
+                    'competition_id' => $competition->id,
                     'status' => 'CLOSED',
                     'active_call_id' => $activeCall->id,
                     'total_entry_count' => 0,
-                    'max_entries' => 2,
+                    'max_entries' => 4,
                     'special_offer' => 'FALSE',
                     'sms_offer_enabled' => 'FALSE',
                     'INTRO' => 1,
@@ -211,20 +203,22 @@ class CapacityCheckTest extends TestCase
 
     public function test_capacity_check_with_competition_with_sms_offer_enabled_passes()
     {
-        $this->competition->update(['sms_offer_enabled' => true]);
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
+        $competition->update(['sms_offer_enabled' => true]);
 
         $this->post(route('active-call.capacity-check'), [
             'call_id' => 53,
-            'phone_number' => $this->competitionNumber,
+            'phone_number' => $competitionNumber,
             'caller_phone_number' => '441604556778',
         ])
             ->assertOk()
-            ->assertJson(function (AssertableJson $json) {
+            ->assertJson(function (AssertableJson $json) use($competition){
                 return $json
-                    ->where('competition_id', $this->competition->id)
+                    ->where('competition_id', $competition->id)
                     ->where('status', 'OPEN')
                     ->where('total_entry_count', 0)
-                    ->where('max_entries', 2)
+                    ->where('max_entries', 4)
                     ->where('special_offer', 'FALSE')
                     ->where('sms_offer_enabled', true)
                     ->where('INTRO', 1)
@@ -242,21 +236,21 @@ class CapacityCheckTest extends TestCase
 
         $activeCall = $activeCalls->first();
 
-        tap($activeCall, function (ActiveCall $activeCall) {
+        tap($activeCall, function (ActiveCall $activeCall) use($competitionNumber){
             $this->assertEquals(53, $activeCall->call_id);
-            $this->assertSame($this->competitionNumber, $activeCall->phone_number);
+            $this->assertSame($competitionNumber, $activeCall->phone_number);
             $this->assertSame('441604556778', $activeCall->caller_phone_number);
             $this->assertNotNull($activeCall->competition_id);
             $this->assertNull($activeCall->status);
         });
 
-        Bus::assertDispatched(UpdateActiveCallJob::class, function ($job) use ($activeCall) {
+        Bus::assertDispatched(UpdateActiveCallJob::class, function ($job) use ($activeCall, $competition) {
             return $job->data === [
-                    'competition_id' => $this->competition->id,
+                    'competition_id' => $competition->id,
                     'status' => 'OPEN',
                     'active_call_id' => $activeCall->id,
                     'total_entry_count' => 0,
-                    'max_entries' => 2,
+                    'max_entries' => 4,
                     'special_offer' => 'FALSE',
                     'sms_offer_enabled' => true,
                     'INTRO' => 1,
@@ -272,13 +266,15 @@ class CapacityCheckTest extends TestCase
 
     public function test_fails_max_lines_exceeded()
     {
-        $this->organisation->update(['max_number_of_lines' => 1]);
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
 
-        ActiveCall::factory(['organisation_id' => $this->organisation->id])->create();
+        $organisation->update(['max_number_of_lines' => 1]);
+
+        ActiveCall::factory(['organisation_id' => $organisation->id])->create();
 
         $this->post(route('active-call.capacity-check'), [
             'call_id' => 53,
-            'phone_number' => $this->competitionNumber,
+            'phone_number' => $competitionNumber,
             'caller_phone_number' => '441604556778',
         ])
             ->assertStatus(412)
@@ -293,20 +289,22 @@ class CapacityCheckTest extends TestCase
 
     public function test_participant_has_entered_too_many_times_via_entrant_round_count()
     {
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
+
         EntrantRoundCount::factory([
-            'hash' => hash('xxh128', "{$this->competition->start} {$this->competition->id} 441604556778"),
+            'hash' => hash('xxh128', "{$competition->start} {$competition->id} 441604556778"),
             'total_entry_count' => 50,
         ])->create();
 
         $this->post(route('active-call.capacity-check'), [
             'call_id' => 53,
-            'phone_number' => $this->competitionNumber,
+            'phone_number' => $competitionNumber,
             'caller_phone_number' => '441604556778',
         ])
             ->assertNotAcceptable()
-            ->assertJson(function (AssertableJson $json){
+            ->assertJson(function (AssertableJson $json) use($competition){
                 return $json
-                    ->where('competition_id', $this->competition->id)
+                    ->where('competition_id', $competition->id)
                     ->where('total_entry_count', 0)
                     ->where('special_offer', 'FALSE')
                     ->where('status', 'TOO_MANY')

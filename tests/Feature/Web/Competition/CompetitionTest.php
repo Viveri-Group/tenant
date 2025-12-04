@@ -19,7 +19,7 @@ class CompetitionTest extends TestCase
     {
         $this->login();
 
-        $competition = Competition::factory()->create();
+        list($organisation, $phoneBookEntry, $competition, $phoneLine, $competitionNumber, $callerNumber) = $this->setCompetition();
 
         $this->get(route('web.competition.index',
             [

@@ -32,6 +32,8 @@ abstract class TestCase extends BaseTestCase
     {
         $organisation = Organisation::factory()->create();
 
+        $this->setFileDefaults($organisation->id);
+
         $competitionNumber = '0333456555';
 
         $phoneBookEntry = PhoneBookEntry::factory(['phone_number' => $competitionNumber, 'organisation_id' => $organisation->id])->create();
@@ -63,9 +65,13 @@ abstract class TestCase extends BaseTestCase
         return $user;
     }
 
-    protected function setFileDefaults(): void
+    protected function setFileDefaults(int $organisationId): void
     {
-        collect(CompetitionAudioType::names())->each(fn($type, $index) => FileDefault::factory(['type' => CompetitionAudioType::from($type), 'external_id' => $index+1])->create());
+        collect(CompetitionAudioType::names())->each(fn($type, $index) => FileDefault::factory([
+            'organisation_id' => $organisationId,
+            'type' => CompetitionAudioType::from($type),
+            'external_id' => $index+1
+        ])->create());
     }
 
     protected function getActiveCallDTO(ActiveCall $activeCall): ActiveCallDTO

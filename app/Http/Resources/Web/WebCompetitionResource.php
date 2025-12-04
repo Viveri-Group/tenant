@@ -26,7 +26,7 @@ class WebCompetitionResource extends JsonResource
             'created_at' => $this->created_at,
             'phone_lines' => WebPhoneLineResource::collection($this->phoneLines),
             'files' => WebFileUploadResource::collection($this->files),
-            'default_audio' => (new GetCompetitionDefaultAudioAction(CompetitionAudioType::names()))->handle()
+            'default_audio' => (new GetCompetitionDefaultAudioAction($this->organisation_id, CompetitionAudioType::names()))->handle()
         ];
     }
 }
