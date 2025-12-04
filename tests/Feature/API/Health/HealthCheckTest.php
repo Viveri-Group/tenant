@@ -21,6 +21,8 @@ class HealthCheckTest extends TestCase
 
     public function test_health_check_returns_failure_when_db_is_down(): void
     {
+        $this->withoutExceptionHandling();
+
         $this->login();
 
         DB::shouldReceive('select')
