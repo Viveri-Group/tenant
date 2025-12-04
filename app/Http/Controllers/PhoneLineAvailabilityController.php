@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Action\PhoneBook\PhoneBookEntryGetPhoneLinesAction;
 use App\Http\Requests\PhoneLineAvailabilityRequest;
 use App\Models\CompetitionPhoneLine;
 use App\Models\PhoneBookEntry;
