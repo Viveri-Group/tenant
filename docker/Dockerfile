@@ -79,9 +79,10 @@ RUN mkdir -p /var/www/html/storage/app/public \
     && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Laravel cron setup
-RUN echo "* * * * * www-data cd /var/www/html && php artisan schedule:run >> /var/log/cron/cron.log 2>&1" >> /etc/crontabs/root \
-    && mkdir -p /var/log/cron \
-    && touch /var/log/cron/cron.log
+RUN mkdir -p /var/log/cron \
+    && touch /var/log/cron/cron.log \
+    && chown -R www-data:www-data /var/log/cron \
+    && echo '* * * * * su -s /bin/sh www-data -c "cd /var/www/html && php artisan schedule:run >> /var/log/cron/cron.log 2>&1"' > /etc/crontabs/root
 
 # Supervisor setup
 RUN mkdir -p /etc/supervisor/conf.d /var/log/supervisor

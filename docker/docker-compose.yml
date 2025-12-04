@@ -1,14 +1,13 @@
 services:
-  itv-api-file-sync:
-    # build:
-    #   context: ..
-    #   dockerfile: docker/Dockerfile
-    image: 756455520547.dkr.ecr.eu-west-2.amazonaws.com/viveri/itv-telephone-api:ce9e85b53b655476a18514eae15965fd244baf39
-    container_name: itv-api-file-sync
+  tenant_api-file-sync:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: tenant_api-file-sync
     volumes:
-      - itv-api-app-files:/target
+      - tenant_api-app-files:/target
     networks:
-      - itv-api-network
+      - tenant_api-network
     command: >
       sh -c "
         echo 'Syncing fresh application files to shared volume...'
@@ -18,26 +17,28 @@ services:
       "
     restart: "no"
 
-  itv-api-init:
-    image: 756455520547.dkr.ecr.eu-west-2.amazonaws.com/viveri/itv-telephone-api:ce9e85b53b655476a18514eae15965fd244baf39
-    container_name: itv-api-init
+  tenant_api-init:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: tenant_api-init
     env_file:
       - .env
     depends_on:
-      - itv-api-file-sync
-      - itv-api-mysql
-      - itv-api-redis
+      - tenant_api-file-sync
+      - tenant_api-mysql
+      - tenant_api-redis
     volumes:
-      - itv-api-app-files:/var/www/html
+      - tenant_api-app-files:/var/www/html
     networks:
-      - itv-api-network
+      - tenant_api-network
     command: >
       sh -c "
         echo 'Waiting for MySQL to be fully ready...'
         sleep 10
         i=1
         while [ \$i -le 30 ]; do
-          if mysql -h itv-api-mysql -u \"\${DB_USERNAME}\" -p\"\${DB_PASSWORD}\" -e 'SELECT 1' >/dev/null 2>&1; then
+          if mysql -h tenant_api-mysql -u \"\${DB_USERNAME}\" -p\"\${DB_PASSWORD}\" -e 'SELECT 1' >/dev/null 2>&1; then
             echo 'MySQL connection successful!'
             break
           fi
@@ -54,60 +55,64 @@ services:
       "
     restart: "no"
 
-  itv-api-web:
-    image: 756455520547.dkr.ecr.eu-west-2.amazonaws.com/viveri/itv-telephone-api:ce9e85b53b655476a18514eae15965fd244baf39
-    container_name: itv-api-web
+  tenant_api-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: tenant_api-web
     ports:
       - '9000:9000'
     env_file:
       - .env
     depends_on:
-      - itv-api-init
-      - itv-api-mysql
-      - itv-api-redis
+      - tenant_api-init
+      - tenant_api-mysql
+      - tenant_api-redis
     volumes:
-      - itv-api-app-files:/var/www/html
-      - itv-api-php-logs:/var/log
+      - tenant_api-app-files:/var/www/html
+      - tenant_api-php-logs:/var/log
     networks:
-      - itv-api-network
+      - tenant_api-network
     cap_add:
       - SYS_PTRACE
 
-  itv-api-worker:
-    image: 756455520547.dkr.ecr.eu-west-2.amazonaws.com/viveri/itv-telephone-api:ce9e85b53b655476a18514eae15965fd244baf39
-    container_name: itv-api-worker
+  tenant_api-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: tenant_api-worker
     env_file:
       - .env
     depends_on:
-      - itv-api-init
-      - itv-api-mysql
-      - itv-api-redis
+      - tenant_api-init
+      - tenant_api-mysql
+      - tenant_api-redis
     volumes:
-      - itv-api-worker-logs:/var/log
+      - tenant_api-worker-logs:/var/log
     networks:
-      - itv-api-network
+      - tenant_api-network
     restart: unless-stopped
     command: ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]
     cap_add:
       - SYS_PTRACE
 
-  itv-api-caddy:
+  tenant_api-caddy:
     image: caddy:latest
-    container_name: itv-api-caddy
+    container_name: tenant_api-caddy
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./config/Caddyfile:/etc/caddy/Caddyfile
-      - itv-api-app-files:/var/www/html
+      - tenant_api-app-files:/var/www/html
     depends_on:
-      - itv-api-web
+      - tenant_api-web
     networks:
-      - itv-api-network
+      - tenant_api-network
 
-  itv-api-mysql:
+  tenant_api-mysql:
     image: mysql:8.0
-    container_name: itv-api-mysql
+    container_name: tenant_api-mysql
     ports:
       - '3306:3306'
     env_file:
@@ -118,29 +123,29 @@ services:
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - itv-api-mysql-data:/var/lib/mysql
+      - tenant_api-mysql-data:/var/lib/mysql
     networks:
-      - itv-api-network
+      - tenant_api-network
     command: --sort_buffer_size=4096M --slow_query_log=1 --slow_query_log_file=/var/log/mysql/slow.log --long_query_time=1
 
-  itv-api-redis:
+  tenant_api-redis:
     image: redis:7-alpine
-    container_name: itv-api-redis
+    container_name: tenant_api-redis
     ports:
       - '6379:6379'
     volumes:
-      - itv-api-redis-data:/data
+      - tenant_api-redis-data:/data
     networks:
-      - itv-api-network
+      - tenant_api-network
 
 networks:
-  itv-api-network:
+  tenant_api-network:
     driver: bridge
 
 volumes:
-  itv-api-build-folder:
-  itv-api-app-files:
-  itv-api-php-logs:
-  itv-api-worker-logs:
-  itv-api-mysql-data:
-  itv-api-redis-data:
+  tenant_api-build-folder:
+  tenant_api-app-files:
+  tenant_api-php-logs:
+  tenant_api-worker-logs:
+  tenant_api-mysql-data:
+  tenant_api-redis-data:
