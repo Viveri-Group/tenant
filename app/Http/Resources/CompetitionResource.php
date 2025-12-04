@@ -19,16 +19,8 @@ class CompetitionResource extends JsonResource
                 'is_open' => $this->isOpen,
                 'start' => $this->start->toIso8601String(),
                 'end' => $this->end->toIso8601String(),
-
-//                'active_from' => $this->type !== 'WHOLE_COMPETITION' ? $this->active_from : null,
-//                'active_to' => $this->type !== 'WHOLE_COMPETITION' ? $this->active_to : null,
-//                'day_of_week' => $this->type === 'WEEKLY' ? $this->day_of_week : null,
-
-//                'type' => $this->type,
                 'max_entries' => $this->max_entries,
 
-                'promo_code_id' => $this->promo_code_id,
-                'promo_code_id_first_entry' => $this->promo_code_id_first_entry,
                 'sms_mask' => $this->sms_mask ?? config('services.dmb-uk.sms.mask'),
                 'sms_offer_enabled' => $this->sms_offer_enabled ?? false,
                 'sms_offer_message' => $this->sms_offer_message,

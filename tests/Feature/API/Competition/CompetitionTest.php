@@ -128,7 +128,17 @@ class CompetitionTest extends TestCase
                     ->where('data.attributes.is_open', false)
                     ->where('data.attributes.start', '2024-01-01T09:01:00+00:00')
                     ->where('data.attributes.end', '2024-01-02T09:00:00+00:00')
-                    ->has('data.relationships.phone_lines', 0);
+                    ->where('data.attributes.max_entries', 5)
+                    ->where('data.attributes.sms_mask', null)
+                    ->where('data.attributes.sms_offer_enabled', false)
+                    ->where('data.attributes.sms_offer_message', null)
+                    ->where('data.attributes.sms_first_entry_enabled', false)
+                    ->where('data.attributes.sms_first_entry_message', null)
+                    ->has('data.relationships.organisation')
+                    ->has('data.relationships.phone_lines')
+                    ->has('data.relationships.winner')
+                    ->has('data.relationships.files')
+                    ->has('data.relationships.draws');
             });
 
         $this->assertCount(1, $competitions = Competition::all());
@@ -250,7 +260,17 @@ class CompetitionTest extends TestCase
                     ->where('data.attributes.is_open', false)
                     ->where('data.attributes.start', $updatedStart->toIso8601String())
                     ->where('data.attributes.end', $updatedEnd->toIso8601String())
-                    ->has('data.relationships.phone_lines', 0);
+                    ->where('data.attributes.max_entries', 5)
+                    ->where('data.attributes.sms_mask', null)
+                    ->where('data.attributes.sms_offer_enabled', false)
+                    ->where('data.attributes.sms_offer_message', null)
+                    ->where('data.attributes.sms_first_entry_enabled', false)
+                    ->where('data.attributes.sms_first_entry_message', null)
+                    ->has('data.relationships.organisation')
+                    ->has('data.relationships.phone_lines')
+                    ->has('data.relationships.winner')
+                    ->has('data.relationships.files')
+                    ->has('data.relationships.draws');
             });
 
         $this->assertCount(1, $competitions = Competition::all());
