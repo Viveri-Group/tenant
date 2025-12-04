@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ActiveCallSeeder::class);
         $this->call(OrphanCallSeeder::class);
         $this->call(FailedEntrySeeder::class);
+        $this->call(FileDefaultSeeder::class);
 //        $this->call(FileUploadSeeder::class);
-//        $this->call(FileDefaultSeeder::class);
     }
 }

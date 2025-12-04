@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\CompetitionAudioType;
 use App\Models\FileDefault;
+use App\Models\Organisation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
@@ -14,6 +15,7 @@ class FileDefaultFactory extends Factory
     public function definition(): array
     {
         return [
+            'organisation_id' => Organisation::factory(),
             'external_id' => rand(15, 5000),
             'type'=> $this->faker->randomElement(CompetitionAudioType::names()),
             'filename'=>$this->faker->word(),

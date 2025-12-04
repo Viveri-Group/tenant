@@ -8,6 +8,7 @@ use App\Models\Competition;
 use App\Models\CompetitionPhoneLine;
 use App\Models\FileDefault;
 use App\Models\FileUpload;
+use App\Models\Organisation;
 use Tests\TestCase;
 
 class GetCompetitionAudioTest extends TestCase
@@ -16,14 +17,16 @@ class GetCompetitionAudioTest extends TestCase
     {
         parent::setUp();
 
-        FileDefault::factory()->create(['external_id' => 1, 'type' => CompetitionAudioType::INTRO->name]);
-        FileDefault::factory()->create(['external_id' => 2, 'type' => CompetitionAudioType::CLI_READOUT_NOTICE->name]);
-        FileDefault::factory()->create(['external_id' => 3, 'type' => CompetitionAudioType::DTMF_MENU->name]);
-        FileDefault::factory()->create(['external_id' => 4, 'type' => CompetitionAudioType::DTMF_SUCCESS->name]);
-        FileDefault::factory()->create(['external_id' => 5, 'type' => CompetitionAudioType::DTMF_SUCCESS_SMS->name]);
-        FileDefault::factory()->create(['external_id' => 6, 'type' => CompetitionAudioType::DTMF_FAIL->name]);
-        FileDefault::factory()->create(['external_id' => 7, 'type' => CompetitionAudioType::COMPETITION_CLOSED->name]);
-        FileDefault::factory()->create(['external_id' => 8, 'type' => CompetitionAudioType::TOO_MANY_ENTRIES->name]);
+        $this->organisation = Organisation::factory()->create();
+
+        FileDefault::factory()->create(['organisation_id' => $this->organisation->id, 'external_id' => 1, 'type' => CompetitionAudioType::INTRO->name]);
+        FileDefault::factory()->create(['organisation_id' => $this->organisation->id, 'external_id' => 2, 'type' => CompetitionAudioType::CLI_READOUT_NOTICE->name]);
+        FileDefault::factory()->create(['organisation_id' => $this->organisation->id, 'external_id' => 3, 'type' => CompetitionAudioType::DTMF_MENU->name]);
+        FileDefault::factory()->create(['organisation_id' => $this->organisation->id, 'external_id' => 4, 'type' => CompetitionAudioType::DTMF_SUCCESS->name]);
+        FileDefault::factory()->create(['organisation_id' => $this->organisation->id, 'external_id' => 5, 'type' => CompetitionAudioType::DTMF_SUCCESS_SMS->name]);
+        FileDefault::factory()->create(['organisation_id' => $this->organisation->id, 'external_id' => 6, 'type' => CompetitionAudioType::DTMF_FAIL->name]);
+        FileDefault::factory()->create(['organisation_id' => $this->organisation->id, 'external_id' => 7, 'type' => CompetitionAudioType::COMPETITION_CLOSED->name]);
+        FileDefault::factory()->create(['organisation_id' => $this->organisation->id, 'external_id' => 8, 'type' => CompetitionAudioType::TOO_MANY_ENTRIES->name]);
 
         $this->competition = Competition::factory()
             ->hasPhoneLines(['phone_number' => '0333111111'])

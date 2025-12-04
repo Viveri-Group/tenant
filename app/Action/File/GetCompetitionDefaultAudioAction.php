@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 class GetCompetitionDefaultAudioAction
 {
-    public function __construct(public array $expectedFileTypes)
+    public function __construct(public string $organisationId, public array $expectedFileTypes)
     {
     }
 
@@ -20,9 +20,12 @@ class GetCompetitionDefaultAudioAction
     protected function getDefaultAudio(): Collection
     {
         return Cache::remember(
-            'bauer_default_audio_files__' . collect($this->expectedFileTypes)->implode('__'),
+            "default_audio_files__{$this->organisationId}__" . collect($this->expectedFileTypes)->implode('__'),
             now()->addMinute(),
-            fn() => FileDefault::whereIn('type', $this->expectedFileTypes)->get()
+            fn() => FileDefault::query()
+                ->where('organisation_id', $this->organisationId)
+                ->whereIn('type', $this->expectedFileTypes)
+                ->get()
         );
     }
 }

@@ -22,7 +22,7 @@ class GetCompetitionAudioAction
         $audioFiles = (new FormatAudioAction($this->expectedFileTypes))->handle($audioFiles, $competitionPhoneLine->competition->files);
 
         // add in default audio where missing
-        $audioFiles = (new GetCompetitionDefaultAudioAction($this->expectedFileTypes))->handle($audioFiles);
+        $audioFiles = (new GetCompetitionDefaultAudioAction($competitionPhoneLine->organisation_id, $this->expectedFileTypes))->handle($audioFiles);
 
         // swap out DTMF_SUCCESS with DTMF_SUCCESS_SMS audio if applicable
         // todo issue #180
