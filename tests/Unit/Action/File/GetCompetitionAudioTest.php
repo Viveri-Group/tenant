@@ -166,6 +166,7 @@ class GetCompetitionAudioTest extends TestCase
     public function test_phone_line_audio_for_another_line_doesnt_interfere_with_another_phone_lines_audio_settings()
     {
         CompetitionPhoneLine::factory([
+            'organisation_id' => $this->organisation->id,
             'competition_id' => $this->competition->id,
             'phone_number' => '033322222',
         ])->create();
@@ -219,6 +220,7 @@ class GetCompetitionAudioTest extends TestCase
     public function test_competition_audio_applies_to_all_phone_lines_for_competition()
     {
         CompetitionPhoneLine::factory([
+            'organisation_id' => $this->organisation->id,
             'competition_id' => $this->competition->id,
             'phone_number' => '033322222',
         ])->create();
@@ -235,7 +237,7 @@ class GetCompetitionAudioTest extends TestCase
         FileUpload::factory()->create([
             'external_id' => 888,
             'competition_id' => null,
-            'competition_phone_line_id' => $this->competition->phoneLines()->first()->id,
+            'competition_phone_line_id' => $this->phoneLine->id,
             'type' => CompetitionAudioType::COMPETITION_CLOSED->name,
         ]);
 
