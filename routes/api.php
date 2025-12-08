@@ -2,14 +2,17 @@
 
 use App\Http\Controllers\ActiveCallClearDownController;
 use App\Http\Controllers\APIHealthCheckController;
+use App\Http\Controllers\AudioFileUploadController;
 use App\Http\Controllers\CallerHistoryController;
 use App\Http\Controllers\CapacityCheckController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\CompetitionDrawController;
+use App\Http\Controllers\CompetitionGetDrawsController;
 use App\Http\Controllers\CompetitionStatisticsController;
 use App\Http\Controllers\CompetitionStatisticsRangeController;
 use App\Http\Controllers\CompetitionStatisticsRoundController;
 use App\Http\Controllers\DeansTestController;
-use App\Http\Controllers\AudioFileUploadController;
+use App\Http\Controllers\GetCompetitionWinnerController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\PhoneBookEntryController;
 use App\Http\Controllers\PhoneBookEntryOrganisationController;
@@ -17,6 +20,8 @@ use App\Http\Controllers\PhoneBookLookupEntryController;
 use App\Http\Controllers\PhoneLineAvailabilityController;
 use App\Http\Controllers\PhoneLineController;
 use App\Http\Controllers\PhoneLineSchedulerController;
+use App\Http\Controllers\SetAltCompetitionWinnerController;
+use App\Http\Controllers\SetCompetitionWinnerController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->scopeBindings()->group(function () {
@@ -58,6 +63,20 @@ Route::middleware('auth:sanctum')->scopeBindings()->group(function () {
     Route::get('/competition/{competition}/statistics/active-round', CompetitionStatisticsController::class)->name('competition.statistics.active-round');
     Route::post('/competition/{competition}/statistics/range', CompetitionStatisticsRangeController::class)->name('competition.statistics.range');
     Route::post('/statistics/round/{competitionDraw:round_hash}', CompetitionStatisticsRoundController::class)->name('competition.statistics.round');
+
+
+
+
+    Route::get('/competition/{competition}/get-draws', CompetitionGetDrawsController::class)->name('competition.get-draws');
+    Route::post('/competition/{competition}/mark-as-drawn', CompetitionDrawController::class)->name('competition.mark-as-drawn');
+
+    Route::post('/specify-winner', SetCompetitionWinnerController::class)->name('competition.specify-winner');
+
+    Route::post('/competition/{competition}/specify-winner-alternative', SetAltCompetitionWinnerController::class)->name('competition.specify-winner.alternative');
+
+    Route::get('/competition/{competition}/get-winner', GetCompetitionWinnerController::class)->name('competition.get-winner');
+
+
 
     Route::post('/caller/history', CallerHistoryController::class)->name('caller.history');
 
