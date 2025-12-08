@@ -67,7 +67,7 @@ Route::middleware('auth:sanctum')->scopeBindings()->group(function () {
 
 
 
-Route::get('/competition/{competition}/get-draws', CompetitionGetDrawsController::class)->name('competition.get-draws');
+    Route::get('/competition/{competition}/get-draws', CompetitionGetDrawsController::class)->name('competition.get-draws');
     Route::post('/competition/{competition}/mark-as-drawn', CompetitionDrawController::class)->name('competition.mark-as-drawn');
 
     Route::post('/specify-winner', SetCompetitionWinnerController::class)->name('competition.specify-winner');
