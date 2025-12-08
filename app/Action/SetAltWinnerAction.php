@@ -48,7 +48,6 @@ class SetAltWinnerAction
             'number_of_entries' => $numberOfEntries,
             'date_from' => Carbon::parse($from)->format('Y-m-d H:i:s'),
             'date_to' => Carbon::parse($to)->format('Y-m-d H:i:s'),
-            'phone_line_id' => $participant->competition_phone_line_id,
             'competition_phone_number' => $participant->competition_phone_number,
             'telephone' => $participant->telephone,
             'call_start' => $participant->call_start,
