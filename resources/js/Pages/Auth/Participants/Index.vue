@@ -61,6 +61,11 @@ const updateSearchCriteria = (searchParams) => {
                                 Call ID <tip description="The unique call id from the shout switch."></tip>
                             </p>
 
+                            <p class="col-span-3 text-center">
+                                Organisation
+                                <tip description="The owner of the competition."></tip>
+                            </p>
+
                             <p class="col-span-2 text-center">
                                 Competition Telephone
                                 <tip description="The competition phone number."></tip>
@@ -74,11 +79,6 @@ const updateSearchCriteria = (searchParams) => {
                             <p class="col-span-3 text-center">
                                 Call Start
                                 <tip description="The time the call started."></tip>
-                            </p>
-
-                            <p class="col-span-3 text-center">
-                                Organisation
-                                <tip description="The owner of the competition."></tip>
                             </p>
                         </div>
                     </div>

@@ -139,8 +139,11 @@ const failDescriptions = {
                             </DateFormatter>
                         </div>
 
-                        <p class="col-span-2 xl:col-span-1 text-gray-400 font-bold">Entries Warning:</p>
-                        <p class="col-span-8 xl:col-span-4" v-text="props.competition.data.entries_warning"></p>
+                        <p class="col-span-2 xl:col-span-1 text-gray-400 font-bold">Org:</p>
+                        <p class="col-span-8 xl:col-span-4">
+                            {{props.competition.data.organisation.name}}
+                            <span class="text-gray-400">({{props.competition.data.organisation.id}})</span>
+                        </p>
 
                         <p class="col-span-2 xl:col-span-1 text-gray-400 font-bold">Special Offer:</p>
                         <p class="col-span-8 xl:col-span-4" v-text="props.competition.data.special_offer"></p>

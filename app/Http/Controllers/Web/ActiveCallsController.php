@@ -90,6 +90,10 @@ class ActiveCallsController extends Controller
             $activeCalls->whereLike('caller_phone_number', '%' . Str::replace(' ', '',$caller_phone_number) . '%');
         }
 
+        if ($request->input('organisation_id')) {
+            $activeCalls->where('organisation_id', $request->input('organisation_id'));
+        }
+
         return $activeCalls;
     }
 }

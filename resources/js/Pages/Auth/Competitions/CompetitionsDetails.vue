@@ -56,6 +56,13 @@ const competitionNameColor = () => {
                     <p class="text-sm " v-text="props.competition.id"></p>
                 </div>
 
+                <div class="hidden xl:flex flex-wrap gap-2 col-span-2 xl:col-span-2">
+                    <p class="text-sm">
+                        {{props.competition.organisation.name}}
+                        <span class="text-gray-400">({{props.competition.organisation.id}})</span>
+                    </p>
+                </div>
+
                 <div class="hidden xl:hidden font-bold text-gray-400">Name:</div>
                 <div class="hidden xl:block col-span-2 xl:col-span-3">
                     <p class="text-sm" :class="competitionNameColor()" v-text="props.competition.name"></p>
@@ -67,7 +74,7 @@ const competitionNameColor = () => {
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Special Offer:</div>
-                <div class="col-span-2 xl:col-span-2 md:text-center">
+                <div class="col-span-2 xl:col-span-1 md:text-center">
                     {{ props.competition.special_offer ?? '-'}}
                 </div>
 

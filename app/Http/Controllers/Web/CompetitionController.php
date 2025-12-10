@@ -76,6 +76,10 @@ class CompetitionController extends Controller
             $competitions->whereLike('name', '%' . $name . '%');
         }
 
+        if ($request->input('organisation_id')) {
+            $competitions->where('organisation_id', $request->input('organisation_id'));
+        }
+
         return $competitions;
     }
 }

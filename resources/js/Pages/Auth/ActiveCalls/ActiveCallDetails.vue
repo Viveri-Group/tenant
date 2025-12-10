@@ -42,6 +42,14 @@ const props = defineProps({
                     </CopyToClipboard>
                 </div>
 
+                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
+                <div class="col-span-2 xl:col-span-2 text-left xl:text-center">
+                    <p class="text-sm">
+                        {{props.activeCall.organisation_name}}
+                        <span class="text-gray-500">({{props.activeCall.organisation_id}})</span>
+                    </p>
+                </div>
+
                 <div class="block xl:hidden font-bold text-gray-400">Competition ID:</div>
                 <div class="block xl:hidden col-span-2 xl:col-span-1 xl:text-center">
                     <Link v-if="props.activeCall.competition_id"
@@ -63,14 +71,6 @@ const props = defineProps({
                 <div class="block xl:hidden font-bold text-gray-400">Caller Phone Number:</div>
                 <div class="col-span-2 xl:col-span-2 xl:text-center">
                     {{ formatNumber(props.activeCall.caller_phone_number)}}
-                </div>
-
-                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
-                <div class="col-span-2 xl:col-span-2 text-left xl:text-center">
-                    <p class="text-sm">
-                        {{props.activeCall.organisation_name}}
-                        <span class="text-gray-500">({{props.activeCall.organisation_id}})</span>
-                    </p>
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Status:</div>

@@ -56,6 +56,14 @@ const props = defineProps({
                     {{ props.orphan.call_id }}
                 </div>
 
+                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
+                <div class="col-span-2 xl:col-span-2 text-left xl:text-center">
+                    <p class="text-sm">
+                        {{props.orphan.organisation_name}}
+                        <span class="text-gray-500">({{props.orphan.organisation_id}})</span>
+                    </p>
+                </div>
+
                 <div class="block xl:hidden font-bold text-gray-400">Competition Phone Number:</div>
                 <div class="col-span-2 xl:col-span-2 xl:text-center">
                     {{ formatNumber(props.orphan.phone_number) }}
@@ -64,14 +72,6 @@ const props = defineProps({
                 <div class="block xl:hidden font-bold text-gray-400">Caller Phone Number:</div>
                 <div class="col-span-2 xl:col-span-2 xl:text-center">
                     {{ formatNumber(props.orphan.caller_phone_number) }}
-                </div>
-
-                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
-                <div class="col-span-2 xl:col-span-2 text-left xl:text-center">
-                    <p class="text-sm">
-                        {{props.orphan.organisation_name}}
-                        <span class="text-gray-500">({{props.orphan.organisation_id}})</span>
-                    </p>
                 </div>
 
                 <div class="block xl:hidden font-bold text-gray-400">Status:</div>

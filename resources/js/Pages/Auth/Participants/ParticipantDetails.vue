@@ -49,6 +49,14 @@ const props = defineProps({
                     {{ props.participant.call_id}}
                 </div>
 
+                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
+                <div class="col-span-2 xl:col-span-3 xl:text-center text-left">
+                    <p class="text-sm">
+                        {{props.participant.organisation_name}}
+                        <span class="text-gray-500">({{props.participant.organisation_id}})</span>
+                    </p>
+                </div>
+
                 <div class="block xl:hidden font-bold text-gray-400">Competition Telephone:</div>
                 <div class="col-span-2 xl:col-span-2 xl:text-center">
                     {{ formatNumber(props.participant.competition_phone_number)}}
@@ -62,14 +70,6 @@ const props = defineProps({
                 <div class="block xl:hidden font-bold text-gray-400">Call Start:</div>
                 <div class="col-span-2 xl:col-span-3 xl:text-center text-left">
                     <DateFormatter :date="participant.call_start" format="do MMM yyyy HH:mm:ss"></DateFormatter>
-                </div>
-
-                <div class="block xl:hidden font-bold text-gray-400">Organisation:</div>
-                <div class="col-span-2 xl:col-span-3 xl:text-center text-left">
-                    <p class="text-sm">
-                        {{props.participant.organisation_name}}
-                        <span class="text-gray-500">({{props.participant.organisation_id}})</span>
-                    </p>
                 </div>
             </div>
         </div>

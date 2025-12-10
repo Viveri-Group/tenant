@@ -13,18 +13,21 @@
             <select
                 class="input"
                 v-bind="$attrs"
+                :value="modelValue"
                 @change="$emit('update:modelValue', $event.target.value)"
             >
                 <option value="" v-if="hasDefault">Please Select...</option>
 
                 <option
                     v-for="option in options"
-                    v-text="option.label"
+                    :key="option.value"
                     :value="option.value"
-                    :selected="modelValue === option.value"
                     :class="{ hidden: option.hidden }"
-                ></option>
+                >
+                    {{ option.label }}
+                </option>
             </select>
+
         </div>
         <ErrorInput :error-key="errorKey"></ErrorInput>
     </div>

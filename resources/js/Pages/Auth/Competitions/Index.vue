@@ -15,6 +15,7 @@ const props = defineProps({
 
 const form = useForm({
     competition_id: '',
+    organisation_id: '',
     call_id:'',
     phone_number: '',
     caller_phone_number: '',
@@ -58,7 +59,12 @@ const updateSearchCriteria = (searchParams) => {
                         >
                             <p>
                                 ID
-                                <tip description="Internal ID of the non entry."></tip>
+                                <tip description="Internal ID of the competition."></tip>
+                            </p>
+
+                            <p class="col-span-2">
+                                Organisation
+                                <tip description="Organisation this belongs to."></tip>
                             </p>
 
                             <p class="col-span-3">
@@ -76,7 +82,7 @@ const updateSearchCriteria = (searchParams) => {
                                 <tip description="The maximum number of times a person can enter a competition."></tip>
                             </p>
 
-                            <p class="text-center col-span-2">
+                            <p class="text-center col-span-1">
                                 Special Offer
                                 <tip description="If a special offer is applied."></tip>
                             </p>

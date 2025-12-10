@@ -63,10 +63,7 @@ Route::middleware('auth:sanctum')->scopeBindings()->group(function () {
     Route::get('/competition/{competition}/statistics/active-round', CompetitionStatisticsController::class)->name('competition.statistics.active-round');
     Route::post('/competition/{competition}/statistics/range', CompetitionStatisticsRangeController::class)->name('competition.statistics.range');
     Route::post('/statistics/round/{competitionDraw:round_hash}', CompetitionStatisticsRoundController::class)->name('competition.statistics.round');
-
-
-
-
+    
     Route::get('/competition/{competition}/get-draws', CompetitionGetDrawsController::class)->name('competition.get-draws');
     Route::post('/competition/{competition}/mark-as-drawn', CompetitionDrawController::class)->name('competition.mark-as-drawn');
 
@@ -75,8 +72,6 @@ Route::middleware('auth:sanctum')->scopeBindings()->group(function () {
     Route::post('/competition/{competition}/specify-winner-alternative', SetAltCompetitionWinnerController::class)->name('competition.specify-winner.alternative');
 
     Route::get('/competition/{competition}/get-winner', GetCompetitionWinnerController::class)->name('competition.get-winner');
-
-
 
     Route::post('/caller/history', CallerHistoryController::class)->name('caller.history');
 

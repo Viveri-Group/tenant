@@ -79,6 +79,10 @@ class OrphanedActiveCallsController extends Controller
             $orphanActiveCalls->whereLike('caller_phone_number', '%' . Str::replace(' ', '',$caller_phone_number) . '%');
         }
 
+        if ($request->input('organisation_id')) {
+            $orphanActiveCalls->where('organisation_id', $request->input('organisation_id'));
+        }
+
         return $orphanActiveCalls;
     }
 }

@@ -78,6 +78,10 @@ class FailedEntriesController extends Controller
             $failedEntries->whereLike('caller_phone_number', '%' . Str::replace(' ', '',$caller_phone_number) . '%');
         }
 
+        if ($request->input('organisation_id')) {
+            $failedEntries->where('organisation_id', $request->input('organisation_id'));
+        }
+
 //        if ($reason = $request->input('reason')) {
 //            if($request->input('reason') === FailedEntryReason::DTMF_INVALID->name){
 //                $failedEntries->whereLike('reason', '%' . $reason . '%');

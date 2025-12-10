@@ -79,6 +79,10 @@ class ParticipantsController extends Controller
             $participants->where('call_start', $call_start);
         }
 
+        if ($request->input('organisation_id')) {
+            $participants->where('organisation_id', $request->input('organisation_id'));
+        }
+
         return $participants;
     }
 }
